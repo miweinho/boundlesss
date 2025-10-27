@@ -15,10 +15,11 @@ MonoBehaviour:
   displayName: 
   icon: {fileID: 0}
   kind: 1
+  visualPrefab: {fileID: 4268265617118676936, guid: aa3f6cb1abb91d840b42dfeef0902b15, type: 3}
   damage: 1
   knockback: 0.5
   critChance: 0
-  cooldown: 0
+  cooldown: 0.25
   range: 20
   directionalAim: 1
   meleeHitboxPrefab: {fileID: 0}

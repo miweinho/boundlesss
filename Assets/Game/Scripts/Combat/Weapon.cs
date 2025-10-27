@@ -31,9 +31,10 @@ public class Weapon : MonoBehaviour
 
     private void DoMelee()
     {
-        if (!data.meleeHitboxPrefab) return;
+        if (!data.meleeHitboxPrefab || user.HandTransform == null) return;
 
         var hitboxGO = Instantiate(data.meleeHitboxPrefab, user.HandTransform.position, Quaternion.identity, user.HandTransform);
+        hitboxGO.transform.localPosition += Vector3.right * 0.5f;
         var hitbox = hitboxGO.GetComponent<Hitbox>();
         Collider2D shooterCol = (user as Component)?.GetComponent<Collider2D>();
         hitbox.Configure(data.damage, data.knockback, user.Team, user.AimDirection, shooterCol);

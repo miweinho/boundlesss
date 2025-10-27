@@ -247,7 +247,8 @@ MonoBehaviour:
   handTransform: {fileID: 6084082234848357845}
   team: 1
   animator: {fileID: 0}
-  startingWeapon: {fileID: 11400000, guid: a05e9b3054fd1c5459fc7b17a84c5d57, type: 2}
+  startingWeapon: {fileID: 0}
+  visualManager: {fileID: 0}
 --- !u!114 &5551758664688694557
 MonoBehaviour:
   m_ObjectHideFlags: 0

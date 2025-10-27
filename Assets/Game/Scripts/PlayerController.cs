@@ -5,6 +5,7 @@ public class PlayerController : MonoBehaviour
 {
     [Header("Input (New Input System)")]
     public InputAction MoveAction;
+    public InputAction NextWeaponAction;
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 3f;
@@ -16,6 +17,7 @@ public class PlayerController : MonoBehaviour
     private Camera cam;
     private Rigidbody2D rb;
     private Animator anim;
+    private WeaponInventory inventory;
 
     private Vector2 move;
     private Vector2 lastMoveDirection = Vector2.right; // for idle facing / anim
@@ -26,16 +28,21 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         cam = Camera.main;
+        inventory = GetComponent<WeaponInventory>();
     }
 
     void OnEnable()
     {
         MoveAction.Enable();
+        NextWeaponAction.Enable();
+        NextWeaponAction.started += _ => inventory?.NextWeapon();
     }
 
     void OnDisable()
     {
         MoveAction.Disable();
+        NextWeaponAction.started -= _ => inventory?.NextWeapon(); // or keep a method handler
+        NextWeaponAction.Disable();
     }
 
     void Update()
@@ -64,6 +71,7 @@ public class PlayerController : MonoBehaviour
             if (aim.sqrMagnitude > 0.0001f) lastAim = aim.normalized;
             // Feed aim to the weapon system
             weaponHolder.SetAim(lastAim);
+            weaponHolder.HandTransform.right = lastAim;
 
             // Optional: rotate the hand bone/transform to point at the aim
             if (rotateHandToAim && weaponHolder.HandTransform != null)

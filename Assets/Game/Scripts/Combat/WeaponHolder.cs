@@ -9,6 +9,7 @@ public class WeaponHolder : MonoBehaviour, IWeaponUser
     [SerializeField] private int team = 0; // player=0 by default
     [SerializeField] private Animator animator;
     [SerializeField] private WeaponData startingWeapon;
+    [SerializeField] private WeaponVisualManager visualManager;
 
     public Transform HandTransform => handTransform;
     public int Team => team;
@@ -17,6 +18,9 @@ public class WeaponHolder : MonoBehaviour, IWeaponUser
 
     private AudioSource audioSource;
     private Weapon equipped;
+    
+
+    
 
     void Awake()
     {
@@ -29,12 +33,17 @@ public class WeaponHolder : MonoBehaviour, IWeaponUser
     public void Equip(WeaponData data)
     {
         Unequip();
-        if (!data) return;
 
+        if (!data) { visualManager?.ClearVisual(); return; }
+
+        // spawn weapon logic (you already have this)
         var go = new GameObject($"Weapon_{data.displayName}");
         go.transform.SetParent(handTransform, false);
         equipped = go.AddComponent<Weapon>();
         equipped.Initialize(data, this, audioSource);
+
+        // spawn visual
+        visualManager?.EquipVisual(data.visualPrefab);
     }
 
     public void Unequip()
@@ -44,6 +53,7 @@ public class WeaponHolder : MonoBehaviour, IWeaponUser
             Destroy(equipped.gameObject);
             equipped = null;
         }
+        visualManager?.ClearVisual();
     }
 
     public bool TryAttack() => equipped && equipped.TryAttack();
