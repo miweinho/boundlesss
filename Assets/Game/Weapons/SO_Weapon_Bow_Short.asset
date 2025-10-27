@@ -14,15 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: 
   icon: {fileID: 0}
-  kind: 0
+  kind: 1
   damage: 1
-  knockback: 2
+  knockback: 0.5
   critChance: 0
-  cooldown: 0.35
-  range: 1.2
+  cooldown: 0
+  range: 20
   directionalAim: 1
   meleeHitboxPrefab: {fileID: 0}
-  projectilePrefab: {fileID: 0}
+  projectilePrefab: {fileID: 3346905198754237919, guid: ed20190c1a2f52a45b557936bddcaae2, type: 3}
   sfx: {fileID: 0}
   swingVfxPrefab: {fileID: 0}
   muzzleVfxPrefab: {fileID: 0}

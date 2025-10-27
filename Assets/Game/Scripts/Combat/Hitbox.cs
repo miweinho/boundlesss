@@ -12,12 +12,15 @@ public class Hitbox : MonoBehaviour
     private int sourceTeam;
     private Vector2 dir;
 
-    public void Configure(int damage, float knockback, int sourceTeam, Vector2 dir)
+    public void Configure(int damage, float knockback, int sourceTeam, Vector2 dir, Collider2D ignoreCollider = null)
     {
         this.damage = damage;
         this.knockback = knockback;
         this.sourceTeam = sourceTeam;
         this.dir = dir.sqrMagnitude > 0.001f ? dir.normalized : Vector2.right;
+        var col = GetComponent<Collider2D>();
+        if (ignoreCollider != null && col != null)
+            Physics2D.IgnoreCollision(col, ignoreCollider, true);
         Destroy(gameObject, lifetime);
     }
 

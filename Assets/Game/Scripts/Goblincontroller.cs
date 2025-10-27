@@ -33,7 +33,6 @@ public class Goblincontroller : MonoBehaviour
 
         // Calculate direction towards the player
         Vector2 desiredDir = ((Vector2)player.position - rb.position).normalized;
-        Debug.Log(desiredDir);
 
         // Move towards the player
         Vector2 next = rb.position + desiredDir * chaseSpeed * Time.deltaTime;

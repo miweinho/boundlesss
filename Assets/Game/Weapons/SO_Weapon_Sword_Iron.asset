@@ -15,13 +15,13 @@ MonoBehaviour:
   displayName: 
   icon: {fileID: 0}
   kind: 0
-  damage: 1
-  knockback: 2
+  damage: 10
+  knockback: 0.75
   critChance: 0
   cooldown: 0.35
-  range: 1.2
+  range: 1.3
   directionalAim: 1
-  meleeHitboxPrefab: {fileID: 0}
+  meleeHitboxPrefab: {fileID: 6993639446489444317, guid: 48f4fe7bbaea16d4180be651510e26a8, type: 3}
   projectilePrefab: {fileID: 0}
   sfx: {fileID: 0}
   swingVfxPrefab: {fileID: 0}

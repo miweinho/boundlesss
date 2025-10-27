@@ -1,96 +1,95 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-
 public class PlayerController : MonoBehaviour
 {
+    [Header("Input (New Input System)")]
     public InputAction MoveAction;
 
-    Rigidbody2D rigidbody2d;
-    public Vector2 move;
+    [Header("Movement")]
+    [SerializeField] private float moveSpeed = 3f;
 
-    public int maxHealth = 5;
+    [Header("Combat/Aim")]
+    [SerializeField] private WeaponHolder weaponHolder;
+    [SerializeField] private bool rotateHandToAim = true;
 
-    int currentHealth;
+    private Camera cam;
+    private Rigidbody2D rb;
+    private Animator anim;
 
-    public float timeInvincible = 2.0f;
-    bool isInvincible;
-    float damageCooldown;
+    private Vector2 move;
+    private Vector2 lastMoveDirection = Vector2.right; // for idle facing / anim
+    private Vector2 lastAim = Vector2.right;
 
-    //Variables for Animator
-    Animator anim;
-    private Vector2 lastMoveDirection;
-
-    // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
-        //Set the player to 0,0 
-        Vector2 startPos = new(0.0f, 0.0f);
-        transform.position = startPos;
-        MoveAction.Enable();
-        rigidbody2d = GetComponent<Rigidbody2D>();
-        currentHealth = maxHealth;
+        rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+        cam = Camera.main;
     }
 
-    // Update is called once per frame
+    void OnEnable()
+    {
+        MoveAction.Enable();
+    }
+
+    void OnDisable()
+    {
+        MoveAction.Disable();
+    }
+
     void Update()
     {
+        // --- Movement input ---
         move = MoveAction.ReadValue<Vector2>();
-        move.Normalize();
-        Animate();
-        //Debug.Log(move);
+        if (move.sqrMagnitude > 1f) move.Normalize(); // keep diagonal speed consistent
 
-        if (isInvincible)
+        // Track last non-zero move direction for animations
+        if (move.sqrMagnitude > 0.0001f)
+            lastMoveDirection = move;
+
+        // --- Mouse aim (world space) ---
+        if (weaponHolder != null && cam != null)
         {
-            damageCooldown -= Time.deltaTime;
-            Debug.Log(damageCooldown);
-            if (damageCooldown <= 0)
+            Vector2 mouseScreen = Mouse.current != null
+                ? Mouse.current.position.ReadValue()
+                : (Vector2)Input.mousePosition;
+
+            Vector3 handPos = weaponHolder.HandTransform.position;
+            float zDist = handPos.z - cam.transform.position.z; // works ortho/perspective
+            Vector3 mouseWorld = cam.ScreenToWorldPoint(new Vector3(mouseScreen.x, mouseScreen.y, zDist));
+            mouseWorld.z = handPos.z;
+
+            Vector2 aim = ((Vector2)(mouseWorld - handPos));
+            if (aim.sqrMagnitude > 0.0001f) lastAim = aim.normalized;
+            // Feed aim to the weapon system
+            weaponHolder.SetAim(lastAim);
+
+            // Optional: rotate the hand bone/transform to point at the aim
+            if (rotateHandToAim && weaponHolder.HandTransform != null)
+                weaponHolder.HandTransform.right = lastAim;
+
+            // Fire on left mouse click (optional). Remove if you trigger elsewhere.
+            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
             {
-                isInvincible = false;
+                weaponHolder.TryAttack();
             }
+                
         }
 
-
-
-
+        Animate();
     }
 
     void FixedUpdate()
     {
-        Vector2 position = (Vector2)rigidbody2d.position + move * 3.0f * Time.deltaTime;
-        rigidbody2d.MovePosition(position);
-        Camera.main.transform.position = new(position.x, position.y, -10.0f);
-        if (move.x <= 0.01 && move.y <= 0.01)
-        {
-            lastMoveDirection = move;
-        }
-        
-
-    }
-
-    public void ChangeHealth(int amount)
-    {
-        if (amount < 0 && !isInvincible)
-        {
-            isInvincible = true;
-            damageCooldown = timeInvincible;
-        
-        }
-        currentHealth = Mathf.Clamp(currentHealth + amount, 0, maxHealth);
-        Debug.Log(currentHealth + "/" + maxHealth);
-    }
-
-    public int health
-    {
-        get
-        {
-            return currentHealth;
-        }
+        // Physics movement
+        Vector2 targetPos = rb.position + move * moveSpeed * Time.fixedDeltaTime;
+        rb.MovePosition(targetPos);
     }
 
     void Animate()
     {
+        if (!anim) return;
         anim.SetFloat("MoveX", move.x);
         anim.SetFloat("MoveY", move.y);
         anim.SetFloat("MoveMagnitude", move.magnitude);

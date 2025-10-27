@@ -20,7 +20,7 @@ public class Weapon : MonoBehaviour
         if (Time.time < nextUseTime || data == null) return false;
         nextUseTime = Time.time + data.cooldown;
 
-        user.Animator?.SetTrigger("Attack");
+        //user.Animator?.SetTrigger("Attack");
 
         if (data.kind == WeaponKind.Melee) DoMelee();
         else DoRanged();
@@ -35,7 +35,8 @@ public class Weapon : MonoBehaviour
 
         var hitboxGO = Instantiate(data.meleeHitboxPrefab, user.HandTransform.position, Quaternion.identity, user.HandTransform);
         var hitbox = hitboxGO.GetComponent<Hitbox>();
-        hitbox.Configure(data.damage, data.knockback, user.Team, user.AimDirection);
+        Collider2D shooterCol = (user as Component)?.GetComponent<Collider2D>();
+        hitbox.Configure(data.damage, data.knockback, user.Team, user.AimDirection, shooterCol);
     }
 
     private void DoRanged()
@@ -47,7 +48,8 @@ public class Weapon : MonoBehaviour
 
         var projGO = Instantiate(data.projectilePrefab, user.HandTransform.position, Quaternion.identity);
         var proj = projGO.GetComponent<Projectile>();
-        proj.Fire(dir, data.damage, data.knockback, user.Team, data.range);
+        Collider2D shooterCol = (user as Component).GetComponent<Collider2D>();
+        proj.Fire(dir, data.damage, data.knockback, user.Team, data.range, shooterCol);
 
         if (data.muzzleVfxPrefab)
             Instantiate(data.muzzleVfxPrefab, user.HandTransform.position, Quaternion.identity);
