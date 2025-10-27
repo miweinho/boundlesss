@@ -1,0 +1,50 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+[RequireComponent(typeof(AudioSource))]
+public class WeaponHolder : MonoBehaviour, IWeaponUser
+{
+    [SerializeField] private Transform handTransform;
+    [SerializeField] private int team = 0; // player=0 by default
+    [SerializeField] private Animator animator;
+    [SerializeField] private WeaponData startingWeapon;
+
+    public Transform HandTransform => handTransform;
+    public int Team => team;
+    public Vector2 AimDirection { get; private set; } = Vector2.right;
+    public Animator Animator => animator;
+
+    private AudioSource audioSource;
+    private Weapon equipped;
+
+    void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
+        if (startingWeapon) Equip(startingWeapon);
+    }
+
+    public void SetAim(Vector2 dir) => AimDirection = dir;
+
+    public void Equip(WeaponData data)
+    {
+        Unequip();
+        if (!data) return;
+
+        var go = new GameObject($"Weapon_{data.displayName}");
+        go.transform.SetParent(handTransform, false);
+        equipped = go.AddComponent<Weapon>();
+        equipped.Initialize(data, this, audioSource);
+    }
+
+    public void Unequip()
+    {
+        if (equipped)
+        {
+            Destroy(equipped.gameObject);
+            equipped = null;
+        }
+    }
+
+    public bool TryAttack() => equipped && equipped.TryAttack();
+}
