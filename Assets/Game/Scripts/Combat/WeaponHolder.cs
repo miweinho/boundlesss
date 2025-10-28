@@ -5,6 +5,9 @@ using UnityEngine;
 [RequireComponent(typeof(AudioSource))]
 public class WeaponHolder : MonoBehaviour, IWeaponUser
 {
+    [Header("Runtime Combat Multipliers")]
+    [Range(0.25f, 4f)] public float damageMultiplier = 1f;
+    [Range(0.25f, 4f)] public float attackSpeedMultiplier = 1f;
     [SerializeField] private Transform handTransform;
     [SerializeField] private int team = 0; // player=0 by default
     [SerializeField] private Animator animator;

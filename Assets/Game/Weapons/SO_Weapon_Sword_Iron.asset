@@ -19,7 +19,7 @@ MonoBehaviour:
   damage: 20
   knockback: 0.75
   critChance: 0
-  cooldown: 0.35
+  cooldown: 1.5
   range: 1.3
   directionalAim: 1
   meleeHitboxPrefab: {fileID: 3128634090419385283, guid: a28d0ddeed57247469a4827bfed4deb0, type: 3}
