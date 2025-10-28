@@ -5,10 +5,14 @@ using UnityEngine;
 [RequireComponent(typeof(AudioSource))]
 public class WeaponHolder : MonoBehaviour, IWeaponUser
 {
+    [Header("Runtime Combat Multipliers")]
+    [Range(0.25f, 4f)] public float damageMultiplier = 1f;
+    [Range(0.25f, 4f)] public float attackSpeedMultiplier = 1f;
     [SerializeField] private Transform handTransform;
     [SerializeField] private int team = 0; // player=0 by default
     [SerializeField] private Animator animator;
     [SerializeField] private WeaponData startingWeapon;
+    [SerializeField] private WeaponVisualManager visualManager;
 
     public Transform HandTransform => handTransform;
     public int Team => team;
@@ -17,6 +21,9 @@ public class WeaponHolder : MonoBehaviour, IWeaponUser
 
     private AudioSource audioSource;
     private Weapon equipped;
+    
+
+    
 
     void Awake()
     {
@@ -29,12 +36,17 @@ public class WeaponHolder : MonoBehaviour, IWeaponUser
     public void Equip(WeaponData data)
     {
         Unequip();
-        if (!data) return;
 
+        if (!data) { visualManager?.ClearVisual(); return; }
+
+        // spawn weapon logic (you already have this)
         var go = new GameObject($"Weapon_{data.displayName}");
         go.transform.SetParent(handTransform, false);
         equipped = go.AddComponent<Weapon>();
         equipped.Initialize(data, this, audioSource);
+
+        // spawn visual
+        visualManager?.EquipVisual(data.visualPrefab);
     }
 
     public void Unequip()
@@ -44,6 +56,7 @@ public class WeaponHolder : MonoBehaviour, IWeaponUser
             Destroy(equipped.gameObject);
             equipped = null;
         }
+        visualManager?.ClearVisual();
     }
 
     public bool TryAttack() => equipped && equipped.TryAttack();

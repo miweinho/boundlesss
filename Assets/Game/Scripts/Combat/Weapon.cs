@@ -7,35 +7,49 @@ public class Weapon : MonoBehaviour
     private IWeaponUser user;
     private AudioSource audioSource;
     private float nextUseTime;
+    private WeaponHolder holder;
 
     public void Initialize(WeaponData data, IWeaponUser user, AudioSource audio)
     {
         this.data = data;
         this.user = user;
         this.audioSource = audio;
+        holder = (user as Component)?.GetComponent<WeaponHolder>();
     }
 
     public bool TryAttack()
     {
-        if (Time.time < nextUseTime || data == null) return false;
-        nextUseTime = Time.time + data.cooldown;
+    if (data == null) return false;
 
-        user.Animator?.SetTrigger("Attack");
+    float cd = data.cooldown;
+    if (holder && holder.attackSpeedMultiplier > 0f)
+        cd = cd / holder.attackSpeedMultiplier;
 
-        if (data.kind == WeaponKind.Melee) DoMelee();
-        else DoRanged();
+    if (Time.time < nextUseTime) return false;
+    nextUseTime = Time.time + cd;
 
-        if (data.sfx && audioSource) audioSource.PlayOneShot(data.sfx);
-        return true;
-    }
+    if (user.Animator != null) user.Animator.SetTrigger("Attack");
+
+    if (data.kind == WeaponKind.Melee) DoMelee();
+    else DoRanged();
+
+    if (data.sfx != null) audioSource?.PlayOneShot(data.sfx);
+    return true;
+}
 
     private void DoMelee()
     {
-        if (!data.meleeHitboxPrefab) return;
+        if (!data.meleeHitboxPrefab || user.HandTransform == null) return;
 
         var hitboxGO = Instantiate(data.meleeHitboxPrefab, user.HandTransform.position, Quaternion.identity, user.HandTransform);
+        hitboxGO.transform.localPosition += Vector3.right * 0.5f;
         var hitbox = hitboxGO.GetComponent<Hitbox>();
-        hitbox.Configure(data.damage, data.knockback, user.Team, user.AimDirection);
+
+        int dmg = data.damage;
+        if (holder) dmg = Mathf.RoundToInt(dmg * holder.damageMultiplier);
+    
+        Collider2D shooterCol = (user as Component)?.GetComponent<Collider2D>();
+        hitbox.Configure(dmg, data.knockback, user.Team, user.AimDirection, shooterCol);
     }
 
     private void DoRanged()
@@ -47,7 +61,12 @@ public class Weapon : MonoBehaviour
 
         var projGO = Instantiate(data.projectilePrefab, user.HandTransform.position, Quaternion.identity);
         var proj = projGO.GetComponent<Projectile>();
-        proj.Fire(dir, data.damage, data.knockback, user.Team, data.range);
+        Collider2D shooterCol = (user as Component).GetComponent<Collider2D>();
+
+        int dmg = data.damage;
+        if (holder) dmg = Mathf.RoundToInt(dmg * holder.damageMultiplier);
+    
+        proj.Fire(dir, dmg, data.knockback, user.Team, data.range, shooterCol);
 
         if (data.muzzleVfxPrefab)
             Instantiate(data.muzzleVfxPrefab, user.HandTransform.position, Quaternion.identity);

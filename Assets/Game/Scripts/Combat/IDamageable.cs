@@ -5,5 +5,7 @@ using UnityEngine;
 public interface IDamageable
 {
     void ApplyDamage(int amount, Vector2 hitDirection, float knockback, int sourceTeam);
+    void ApplyZoneDamage(int amount);
+    void Heal(int amount);
 }
 

@@ -14,6 +14,9 @@ public class WeaponData : ScriptableObject
     [Header("Type")]
     public WeaponKind kind;
 
+    [Header("Visuals (optional)")]
+    public GameObject visualPrefab; // e.g., Sword_Visual, Bow_Visual
+
     [Header("Combat")]
     public int damage = 1;
     public float knockback = 2f;
