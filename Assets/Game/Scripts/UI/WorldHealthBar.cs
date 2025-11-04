@@ -4,19 +4,18 @@ using UnityEngine.UI;
 public class WorldHealthBar : MonoBehaviour
 {
     public Damageable target;
-    public Image fill;
+    public Slider healthBar;
 
     void Start()
     {
-        // try to auto-find the fill image if not set in the prefab
-        if (fill == null)
-            fill = GetComponentInChildren<Image>();
+
+        healthBar = GetComponent<Slider>();
+        healthBar.maxValue = target.maxHP;
+        healthBar.value = target.currentHP;
+            
 
         if (target)
         {
-            if (fill == null)
-                Debug.LogWarning($"WorldHealthBar on '{gameObject.name}' has no Image assigned/found.", this);
-
             // Subscribe to changes
             target.OnHealthChanged += UpdateBar;
             // Initialize immediately (guarded inside UpdateBar)
@@ -32,18 +31,18 @@ public class WorldHealthBar : MonoBehaviour
 
     private void UpdateBar(int current, int max)
     {
-        if (fill == null)
+        if (healthBar == null)
         {
             // try again in case it wasn't available at Start
-            fill = GetComponentInChildren<Image>();
-            if (fill == null)
+            healthBar = GetComponentInChildren<Slider>();
+            if (healthBar == null)
             {
                 Debug.LogWarning($"WorldHealthBar.UpdateBar: no Image to update on '{gameObject.name}'", this);
                 return;
             }
         }
 
-        if (max <= 0) { fill.fillAmount = 0f; return; }
-        fill.fillAmount = (float)current / max;
+        healthBar.maxValue = max;
+        healthBar.value = current;
     }
 }
