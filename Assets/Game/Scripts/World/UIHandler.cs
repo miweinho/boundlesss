@@ -24,7 +24,7 @@ public class UIHandler : MonoBehaviour
    {
        UIDocument uiDocument = GetComponent<UIDocument>();
        m_Healthbar = uiDocument.rootVisualElement.Q<VisualElement>("HealthBar");
-       SetHealthValue(1.0f);
+       SetHealthValue(0.5f);
    }
 
 
