@@ -5,7 +5,7 @@ public class MainMenuUI : MonoBehaviour
 {
     public void PlayGame()
     {
-        SceneManager.LoadScene("FightScene");
+        SceneManager.LoadScene("IntroScene");
     }
 
     public void QuitGame()
@@ -13,5 +13,11 @@ public class MainMenuUI : MonoBehaviour
         Application.Quit();
         Debug.Log("QUIT GAME!");
     }
+
+    public void OpenOptionsMenu()
+    {
+        SceneManager.LoadScene("OptionsMenu");
+    }
+
 }
 
