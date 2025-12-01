@@ -69,6 +69,11 @@ public class Weapon : MonoBehaviour
         {
             Collider2D shooterCol = (user as Component)?.GetComponent<Collider2D>();
             swing.StartSwing(data.damage, data.knockback, user.Team, shooterCol);
+            // Play swing sound effect
+            if (data.sfx != null && audioSource != null)
+            {
+                audioSource.PlayOneShot(data.sfx);
+            }
             return;
         }
         // fallback: existing hitbox-prefab flow (if you still use it)
