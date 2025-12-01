@@ -10,20 +10,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d7e0822a8bc9af3468145734c41a457d, type: 3}
-  m_Name: SO_Weapon_Sword_Iron
+  m_Name: Skeleton_Bow
   m_EditorClassIdentifier: 
   displayName: 
-  icon: {fileID: -817963673, guid: 4134a1da5602c604aa80f03aa1689c95, type: 3}
-  kind: 0
-  visualPrefab: {fileID: 1787904245949141057, guid: 24092d5c9ccdff444900550a2984d52b, type: 3}
-  damage: 20
-  knockback: 0.75
+  icon: {fileID: 21300000, guid: 5ba4dba6765632b4aac3bdb0089be968, type: 3}
+  kind: 1
+  visualPrefab: {fileID: 0}
+  damage: 1
+  knockback: 2
   critChance: 0
-  cooldown: 1.5
-  range: 1.3
+  cooldown: 0.5
+  range: 5
   directionalAim: 1
-  meleeHitboxPrefab: {fileID: 3128634090419385283, guid: a28d0ddeed57247469a4827bfed4deb0, type: 3}
-  projectilePrefab: {fileID: 0}
-  sfx: {fileID: 8300000, guid: 8461ab5875b506f469a9e8f45ae729ec, type: 3}
+  meleeHitboxPrefab: {fileID: 0}
+  projectilePrefab: {fileID: 3346905198754237919, guid: ed20190c1a2f52a45b557936bddcaae2, type: 3}
+  sfx: {fileID: 0}
   swingVfxPrefab: {fileID: 0}
   muzzleVfxPrefab: {fileID: 0}
