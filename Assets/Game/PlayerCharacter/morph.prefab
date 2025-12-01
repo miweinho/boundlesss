@@ -19,7 +19,7 @@ GameObject:
   - component: {fileID: 1235603427028019853}
   - component: {fileID: 8690808255085535620}
   - component: {fileID: 6595724222016550661}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: morph
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -437,7 +437,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1784630214435409915}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Hand
   m_TagString: Player
   m_Icon: {fileID: 0}
