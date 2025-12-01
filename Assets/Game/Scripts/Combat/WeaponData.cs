@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum WeaponKind { Melee, Ranged }
+public enum WeaponKind { Melee, Ranged, Bite }
 
 [CreateAssetMenu(menuName = "RPG/Weapon Data")]
 public class WeaponData : ScriptableObject
