@@ -27,6 +27,10 @@ public class PlayerController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+        if (anim == null)
+        {
+            Debug.Log("Big error no animator!!!!");
+        }
         cam = Camera.main;
         inventory = GetComponent<WeaponInventory>();
     }

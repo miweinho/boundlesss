@@ -19,7 +19,7 @@ GameObject:
   - component: {fileID: 1235603427028019853}
   - component: {fileID: 8690808255085535620}
   - component: {fileID: 6595724222016550661}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: morph
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -151,7 +151,7 @@ MonoBehaviour:
       m_Flags: 4
     - m_Name: up
       m_Id: 184a9490-f4e9-416e-8b5d-276352316ef7
-      m_Path: <Keyboard>/upArrow
+      m_Path: <Keyboard>/w
       m_Interactions: 
       m_Processors: 
       m_Groups: 
@@ -159,7 +159,7 @@ MonoBehaviour:
       m_Flags: 8
     - m_Name: down
       m_Id: bc61b426-913e-4879-a163-e5eafe650e20
-      m_Path: <Keyboard>/downArrow
+      m_Path: <Keyboard>/s
       m_Interactions: 
       m_Processors: 
       m_Groups: 
@@ -167,7 +167,7 @@ MonoBehaviour:
       m_Flags: 8
     - m_Name: left
       m_Id: 968ecd55-32a7-4773-b5ac-9c7847c0124b
-      m_Path: <Keyboard>/leftArrow
+      m_Path: <Keyboard>/a
       m_Interactions: 
       m_Processors: 
       m_Groups: 
@@ -175,7 +175,7 @@ MonoBehaviour:
       m_Flags: 8
     - m_Name: right
       m_Id: b2047087-ecfe-4c6b-8d92-3ca8b443d8a9
-      m_Path: <Keyboard>/rightArrow
+      m_Path: <Keyboard>/d
       m_Interactions: 
       m_Processors: 
       m_Groups: 
@@ -437,7 +437,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1784630214435409915}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Hand
   m_TagString: Player
   m_Icon: {fileID: 0}

@@ -31,7 +31,17 @@ public class WeaponHolder : MonoBehaviour, IWeaponUser
         if (startingWeapon) Equip(startingWeapon);
     }
 
-    public void SetAim(Vector2 dir) => AimDirection = dir;
+    public void SetAim(Vector2 dir)
+    {
+        AimDirection = dir;
+        
+        // Rotate the hand (and weapon visual) to face aim direction
+        if (handTransform != null && dir.sqrMagnitude > 0.001f)
+        {
+            float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+            handTransform.rotation = Quaternion.Euler(0, 0, angle);
+        }
+    }
 
     public void Equip(WeaponData data)
     {
@@ -46,7 +56,7 @@ public class WeaponHolder : MonoBehaviour, IWeaponUser
         equipped.Initialize(data, this, audioSource);
 
         // spawn visual
-        visualManager?.EquipVisual(data.visualPrefab);
+        //visualManager?.EquipVisual(data.visualPrefab);
     }
 
     public void Unequip()
