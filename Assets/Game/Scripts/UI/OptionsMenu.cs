@@ -16,10 +16,8 @@ public class OptionsMenu : MonoBehaviour
 
     void Start()
     {
-        // Sincroniza o estado inicial do fullscreen
         fullscreenToggle.isOn = Screen.fullScreen;
 
-        // Atualiza sliders de volume (para refletir valores atuais)
         float volume;
         if (audioMixer.GetFloat("MasterVolume", out volume))
             masterSlider.value = Mathf.Pow(10, volume / 20);
