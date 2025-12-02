@@ -12,10 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa37cb42529b8074ea9085a40389a58e, type: 3}
   m_Name: NewNPCDialogue
   m_EditorClassIdentifier: 
-  npcName: 
-  npcPortrait: {fileID: 0}
-  dialogueLines: []
-  autoProgressLines: 
+  npcName: Old Goblin
+  npcPortrait: {fileID: -1933547308, guid: e9242c9dd0938cb45be66ca9cda6f16b, type: 3}
+  dialogueLines:
+  - 'Hello ehhmmm creature '
+  - It has been a long time since ...
+  - somebody escaped from that place.
+  - Search for the goblin king he can help did.
+  autoProgressLines: 01010100
   autoProgressDelay: 1.5
   typingSpeed: 0.05
   voiceSound: {fileID: 0}
