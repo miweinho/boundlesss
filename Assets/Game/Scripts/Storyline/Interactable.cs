@@ -24,7 +24,6 @@ public class Interactor : MonoBehaviour
         Vector2 pos = transform.position;
 
         Collider2D[] hits = Physics2D.OverlapCircleAll(pos, interactDistance, interactableMask);
-        Debug.Log($"Interactor: hits={hits.Length}", this);
 
         if (hits.Length == 0) return;
 
@@ -32,7 +31,7 @@ public class Interactor : MonoBehaviour
         foreach (var col in hits)
         {
             var interact = col.GetComponents<MonoBehaviour>().OfType<IInteractable>().FirstOrDefault();
-            Debug.Log($"  hit {col.name} -> interactable={(interact!=null)}", col);
+            
 
             if (interact == null) continue;
 
