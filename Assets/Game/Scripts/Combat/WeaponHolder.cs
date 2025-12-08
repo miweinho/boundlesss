@@ -5,6 +5,9 @@ using UnityEngine;
 [RequireComponent(typeof(AudioSource))]
 public class WeaponHolder : MonoBehaviour, IWeaponUser
 {
+    [Header("Runtime Combat Multipliers")]
+    [Range(0.25f, 4f)] public float damageMultiplier = 1f;
+    [Range(0.25f, 4f)] public float attackSpeedMultiplier = 1f;
     [SerializeField] private Transform handTransform;
     [SerializeField] private int team = 0; // player=0 by default
     [SerializeField] private Animator animator;
@@ -28,7 +31,17 @@ public class WeaponHolder : MonoBehaviour, IWeaponUser
         if (startingWeapon) Equip(startingWeapon);
     }
 
-    public void SetAim(Vector2 dir) => AimDirection = dir;
+    public void SetAim(Vector2 dir)
+    {
+        AimDirection = dir;
+        
+        // Rotate the hand (and weapon visual) to face aim direction
+        if (handTransform != null && dir.sqrMagnitude > 0.001f)
+        {
+            float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+            handTransform.rotation = Quaternion.Euler(0, 0, angle);
+        }
+    }
 
     public void Equip(WeaponData data)
     {
@@ -43,7 +56,7 @@ public class WeaponHolder : MonoBehaviour, IWeaponUser
         equipped.Initialize(data, this, audioSource);
 
         // spawn visual
-        visualManager?.EquipVisual(data.visualPrefab);
+        //visualManager?.EquipVisual(data.visualPrefab);
     }
 
     public void Unequip()

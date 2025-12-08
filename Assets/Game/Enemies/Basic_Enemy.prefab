@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6084082234848357845}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Hand
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -46,7 +46,9 @@ GameObject:
   - component: {fileID: 810145272484641298}
   - component: {fileID: 5551758664688694557}
   - component: {fileID: -8799115416946898339}
-  m_Layer: 0
+  - component: {fileID: 8481482702943993103}
+  - component: {fileID: 7996747742739537895}
+  m_Layer: 9
   m_Name: Basic_Enemy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -244,11 +246,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd59ed148f61de145a8a003da93a4707, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  damageMultiplier: 1
+  attackSpeedMultiplier: 1
   handTransform: {fileID: 6084082234848357845}
   team: 1
   animator: {fileID: 0}
-  startingWeapon: {fileID: 0}
-  visualManager: {fileID: 0}
+  startingWeapon: {fileID: 11400000, guid: a05e9b3054fd1c5459fc7b17a84c5d57, type: 2}
+  visualManager: {fileID: 7996747742739537895}
 --- !u!114 &5551758664688694557
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -261,9 +265,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cd81f254d1cd6d64a968bb45c3a76d58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  healthBarPrefab: {fileID: 9071230968736776465, guid: c6da9ba4568d6b44e9bf67a4408fe57f, type: 3}
   team: 1
-  maxHP: 20
-  currentHP: 20
+  maxHP: 100
+  currentHP: 100
 --- !u!61 &-8799115416946898339
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -309,3 +314,43 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.82120824, y: 0.9605224}
   m_EdgeRadius: 0
+--- !u!50 &8481482702943993103
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9048155023187915285}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
+--- !u!114 &7996747742739537895
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9048155023187915285}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9962ea5e62b02643a2222a76908d96c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hand: {fileID: 6084082234848357845}

@@ -7,52 +7,176 @@ public class Weapon : MonoBehaviour
     private IWeaponUser user;
     private AudioSource audioSource;
     private float nextUseTime;
+    private WeaponHolder holder;
+    private Animator weaponVisualAnimator;
 
     public void Initialize(WeaponData data, IWeaponUser user, AudioSource audio)
     {
         this.data = data;
         this.user = user;
         this.audioSource = audio;
+        holder = (user as Component)?.GetComponent<WeaponHolder>();
+        
+        var userComp = user as Component;
+        if (userComp != null)
+        {
+            var vm = userComp.GetComponentInChildren<WeaponVisualManager>();
+            if (vm != null && data != null)
+            {
+                vm.EquipVisual(data.visualPrefab);
+                // cache animator reference for ranged/bow animations
+                weaponVisualAnimator = vm.BowAnimator;
+            }
+        }
     }
 
     public bool TryAttack()
     {
-        if (Time.time < nextUseTime || data == null) return false;
-        nextUseTime = Time.time + data.cooldown;
+        if (data == null) return false;
 
-        //user.Animator?.SetTrigger("Attack");
+        // Cooldown handling
+        float cd = data.cooldown;
+        if (holder && holder.attackSpeedMultiplier > 0f)
+            cd = cd / holder.attackSpeedMultiplier;
 
-        if (data.kind == WeaponKind.Melee) DoMelee();
-        else DoRanged();
+        if (Time.time < nextUseTime) return false;
+        nextUseTime = Time.time + cd;
 
-        if (data.sfx && audioSource) audioSource.PlayOneShot(data.sfx);
+        // Trigger attack animation if available
+        if (user.Animator != null)
+            user.Animator.SetTrigger("Attack");
+
+        // Choose behaviour by weapon kind
+        switch (data.kind)
+        {
+            case WeaponKind.Melee:
+                DoMelee();
+                break;
+
+            case WeaponKind.Ranged:
+            //Ranged attack trigger animation after end of bow animation attack will becalled.
+                if (weaponVisualAnimator != null)
+                {
+                weaponVisualAnimator.SetTrigger("Fire");
+                }
+                break;
+
+            case WeaponKind.Bite:
+                DoBite();
+                break;
+
+            default:
+                // Fallback to melee
+                DoMelee();
+                break;
+        }
+
+        if (data.sfx != null)
+            audioSource?.PlayOneShot(data.sfx);
+
         return true;
     }
 
+
     private void DoMelee()
     {
-        if (!data.meleeHitboxPrefab || user.HandTransform == null) return;
+        var userComp = user as Component;
+        if (userComp == null) return;
 
+        var swing = userComp.GetComponentInChildren<MeleeSwing>();
+        if (swing != null)
+        {
+            Collider2D shooterCol = (user as Component)?.GetComponent<Collider2D>();
+            swing.StartSwing(data.damage, data.knockback, user.Team, shooterCol);
+            // Play swing sound effect
+            if (data.sfx != null && audioSource != null)
+            {
+                audioSource.PlayOneShot(data.sfx);
+            }
+            return;
+        }
+        // fallback: existing hitbox-prefab flow (if you still use it)
+        if (!data.meleeHitboxPrefab || user.HandTransform == null) return;
         var hitboxGO = Instantiate(data.meleeHitboxPrefab, user.HandTransform.position, Quaternion.identity, user.HandTransform);
-        hitboxGO.transform.localPosition += Vector3.right * 0.5f;
         var hitbox = hitboxGO.GetComponent<Hitbox>();
-        Collider2D shooterCol = (user as Component)?.GetComponent<Collider2D>();
-        hitbox.Configure(data.damage, data.knockback, user.Team, user.AimDirection, shooterCol);
+        if (hitbox != null)
+        {
+            Collider2D shooterCol = (user as Component)?.GetComponent<Collider2D>();
+            hitbox.Configure(data.damage, data.knockback, user.Team, user.AimDirection, shooterCol);
+        }
     }
 
     private void DoRanged()
     {
         if (!data.projectilePrefab) return;
+        if (holder)
+        {
+            if (data.muzzleVfxPrefab)
+            {
+                Instantiate(data.muzzleVfxPrefab, user.HandTransform.position, Quaternion.identity);
+            }
 
-        var dir = data.directionalAim ? (user.AimDirection.sqrMagnitude > 0.001f ? user.AimDirection.normalized : Vector2.right)
+            GameObject projGO = Instantiate(data.projectilePrefab, user.HandTransform.position, Quaternion.identity);
+            
+            // Set projectile layer based on team
+            int projectileLayer = (user.Team == 0) ? LayerMask.NameToLayer("PlayerProjectile") : LayerMask.NameToLayer("EnemyProjectile");
+            projGO.layer = projectileLayer;
+            
+            Projectile proj = projGO.GetComponent<Projectile>();
+            if (proj != null)
+            {
+                var dir = data.directionalAim ? (user.AimDirection.sqrMagnitude > 0.001f ? user.AimDirection.normalized : Vector2.right)
                                       : Vector2.right;
 
-        var projGO = Instantiate(data.projectilePrefab, user.HandTransform.position, Quaternion.identity);
-        var proj = projGO.GetComponent<Projectile>();
-        Collider2D shooterCol = (user as Component).GetComponent<Collider2D>();
-        proj.Fire(dir, data.damage, data.knockback, user.Team, data.range, shooterCol);
+                int dmg = data.damage;
+                if (holder) dmg = Mathf.RoundToInt(dmg * holder.damageMultiplier);
+            
+                proj.Fire(dir, dmg, data.knockback, user.Team, data.range, (user as Component).GetComponent<Collider2D>());
 
-        if (data.muzzleVfxPrefab)
-            Instantiate(data.muzzleVfxPrefab, user.HandTransform.position, Quaternion.identity);
+                if (data.sfx != null)
+                    audioSource?.PlayOneShot(data.sfx);
+            }
+        }
     }
+
+        public void OnBowRelease()
+        {
+        // only ranged
+        if (data == null || data.kind != WeaponKind.Ranged)
+            return;
+
+        DoRanged();
+
+        if (data.sfx != null)
+            audioSource?.PlayOneShot(data.sfx);
+        }
+
+    private void DoBite()
+    {
+        if (!data.meleeHitboxPrefab || user.HandTransform == null) return;
+
+        // Spawn the bite hitbox at the hand/mouth
+        var hitboxGO = Instantiate(
+            data.meleeHitboxPrefab,
+            user.HandTransform.position,
+            Quaternion.identity,
+            user.HandTransform
+        );
+
+        // Small offset forward - unsure if worth keeping or not 
+        // hitboxGO.transform.localPosition += Vector3.right * 0.5f;
+
+        int dmg = data.damage;
+        if (holder)
+            dmg = Mathf.RoundToInt(dmg * holder.damageMultiplier);
+
+        Collider2D shooterCol = (user as Component)?.GetComponent<Collider2D>();
+
+        var hitbox = hitboxGO.GetComponent<Hitbox>();
+        if (hitbox != null)
+        {
+            hitbox.Configure(dmg, data.knockback, user.Team, user.AimDirection, shooterCol);
+        }
+    }
+
 }
