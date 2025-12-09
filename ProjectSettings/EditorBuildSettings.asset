@@ -18,6 +18,9 @@ EditorBuildSettings:
     path: Assets/Scenes/IntroMap.unity
     guid: da8d88c9c4817e341827b0d073d2cc02
   - enabled: 1
+    path: Assets/Scenes/SkeletonScene.unity
+    guid: 25cfae5b26b16da49b15fee4a690db72
+  - enabled: 1
     path: Assets/Scenes/FightScene.unity
     guid: ff9719e0aa199b646b59d5af0d608674
   - enabled: 1
