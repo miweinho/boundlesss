@@ -6,7 +6,7 @@ public class SkeletonController : ChasingMob2D
 {
     [Header("Ranged Attack")]
     [SerializeField, Range(0f, 20f)]
-    private float attackRange = 6f;
+    protected float attackRange = 6f;
 
     private WeaponHolder weaponHolder;
 
