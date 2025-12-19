@@ -38,6 +38,6 @@ public class IntroController : MonoBehaviour
 
     public void StartGame()
     {
-        SceneManager.LoadScene("FightScene");
+        SceneManager.LoadScene("IntroMap");
     }
 }
