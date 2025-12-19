@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6003898139699533408}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Hand
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -50,7 +50,7 @@ GameObject:
   - component: {fileID: 8270490030465617780}
   - component: {fileID: 2250062645933689315}
   - component: {fileID: 6500731453242647373}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: morph
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -113,7 +113,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 8
   m_Sprite: {fileID: 879241570, guid: b2eb5712130815641aba2453afe9fec7, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -173,7 +173,7 @@ MonoBehaviour:
     m_Interactions: 
     m_SingletonActionBindings:
     - m_Name: 2D Vector
-      m_Id: 88822eb0-4785-41c0-8f18-0474b51eb41b
+      m_Id: 75916b48-38bd-4ea6-894e-d02e8e44cdd0
       m_Path: 2DVector
       m_Interactions: 
       m_Processors: 
@@ -181,32 +181,32 @@ MonoBehaviour:
       m_Action: Move
       m_Flags: 4
     - m_Name: up
-      m_Id: 184a9490-f4e9-416e-8b5d-276352316ef7
-      m_Path: <Keyboard>/upArrow
+      m_Id: 73688caa-7483-4e59-a75d-f62d19184692
+      m_Path: <Keyboard>/w
       m_Interactions: 
       m_Processors: 
       m_Groups: 
       m_Action: Move
       m_Flags: 8
     - m_Name: down
-      m_Id: bc61b426-913e-4879-a163-e5eafe650e20
-      m_Path: <Keyboard>/downArrow
+      m_Id: 5bd18e02-a100-4c2f-a825-fd7fa11f3e9a
+      m_Path: <Keyboard>/s
       m_Interactions: 
       m_Processors: 
       m_Groups: 
       m_Action: Move
       m_Flags: 8
     - m_Name: left
-      m_Id: 968ecd55-32a7-4773-b5ac-9c7847c0124b
-      m_Path: <Keyboard>/leftArrow
+      m_Id: 0dec2e59-4ad4-4369-8f1f-39c23f364107
+      m_Path: <Keyboard>/a
       m_Interactions: 
       m_Processors: 
       m_Groups: 
       m_Action: Move
       m_Flags: 8
     - m_Name: right
-      m_Id: b2047087-ecfe-4c6b-8d92-3ca8b443d8a9
-      m_Path: <Keyboard>/rightArrow
+      m_Id: c05395dc-0ca4-42d2-a5ef-9e7d8b269331
+      m_Path: <Keyboard>/d
       m_Interactions: 
       m_Processors: 
       m_Groups: 
