@@ -62,6 +62,11 @@ public class Weapon : MonoBehaviour
                 break;
 
             case WeaponKind.Bite:
+                if (user.Animator != null)
+                {
+                    user.Animator.SetTrigger("Attack");
+                }
+                
                 DoBite();
                 break;
 
