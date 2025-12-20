@@ -51,44 +51,48 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        // --- Movement input ---
-        move = MoveAction.ReadValue<Vector2>();
-        if (move.sqrMagnitude > 1f) move.Normalize(); // keep diagonal speed consistent
-
-        // Track last non-zero move direction for animations
-        if (move.sqrMagnitude > 0.0001f)
-            lastMoveDirection = move;
-
-        // --- Mouse aim (world space) ---
-        if (weaponHolder != null && cam != null)
+        if (GameManager.Instance.GameplayActive)
         {
-            Vector2 mouseScreen = Mouse.current != null
-                ? Mouse.current.position.ReadValue()
-                : (Vector2)Input.mousePosition;
+            // --- Movement input ---
+            move = MoveAction.ReadValue<Vector2>();
+            if (move.sqrMagnitude > 1f) move.Normalize(); // keep diagonal speed consistent
 
-            Vector3 handPos = weaponHolder.HandTransform.position;
-            float zDist = handPos.z - cam.transform.position.z; // works ortho/perspective
-            Vector3 mouseWorld = cam.ScreenToWorldPoint(new Vector3(mouseScreen.x, mouseScreen.y, zDist));
-            mouseWorld.z = handPos.z;
+            // Track last non-zero move direction for animations
+            if (move.sqrMagnitude > 0.0001f)
+                lastMoveDirection = move;
 
-            Vector2 aim = ((Vector2)(mouseWorld - handPos));
-            if (aim.sqrMagnitude > 0.0001f) lastAim = aim.normalized;
-            // Feed aim to the weapon system
-            weaponHolder.SetAim(lastAim);
-            weaponHolder.HandTransform.right = lastAim;
+            // --- Mouse aim (world space) ---
+            if (weaponHolder != null && cam != null)
+            {
+                Vector2 mouseScreen = Mouse.current != null
+                    ? Mouse.current.position.ReadValue()
+                    : (Vector2)Input.mousePosition;
 
-            // Optional: rotate the hand bone/transform to point at the aim
-            if (rotateHandToAim && weaponHolder.HandTransform != null)
+                Vector3 handPos = weaponHolder.HandTransform.position;
+                float zDist = handPos.z - cam.transform.position.z; // works ortho/perspective
+                Vector3 mouseWorld = cam.ScreenToWorldPoint(new Vector3(mouseScreen.x, mouseScreen.y, zDist));
+                mouseWorld.z = handPos.z;
+
+                Vector2 aim = ((Vector2)(mouseWorld - handPos));
+                if (aim.sqrMagnitude > 0.0001f) lastAim = aim.normalized;
+                // Feed aim to the weapon system
+                weaponHolder.SetAim(lastAim);
                 weaponHolder.HandTransform.right = lastAim;
 
-            // Fire on left mouse click (optional). Remove if you trigger elsewhere.
-            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-            {
-                weaponHolder.TryAttack();
-            }
-                
-        }
+                // Optional: rotate the hand bone/transform to point at the aim
+                if (rotateHandToAim && weaponHolder.HandTransform != null)
+                    weaponHolder.HandTransform.right = lastAim;
 
+                // Fire on left mouse click (optional). Remove if you trigger elsewhere.
+                if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+                {
+                    weaponHolder.TryAttack();
+                }
+
+            }
+
+            
+        }
         Animate();
     }
 
