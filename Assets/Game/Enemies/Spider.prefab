@@ -221,11 +221,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61c96f10b9274674ea543cc1f6066e4a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  chaseSpeed: 3
+  chaseSpeed: 2
   stopDistance: 0
   aggroRange: 5
   disengageRange: 8
-  attackRange: 1.2
+  attackRange: 0.5
+  attackCloseBuffer: 0.35
   lowHealthFraction: 0.3
   retreatSafeDistance: 8
   retreatSpeedMultiplier: 1

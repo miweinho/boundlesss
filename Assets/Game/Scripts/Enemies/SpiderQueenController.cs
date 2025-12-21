@@ -31,6 +31,7 @@ public class SpiderQueenController : ChasingMob2D
 
     private bool enraged = false;
     private bool hasAggro = false;
+    private bool loggedMissingDependencies = false;
 
     private enum QueenState { Idle, Chasing, RangedAttacking, MeleeAttacking }
     private QueenState state = QueenState.Idle;
@@ -68,7 +69,14 @@ public class SpiderQueenController : ChasingMob2D
     void Update()
     {
         if (!target || weaponHolder == null || damageable == null)
+        {
+            if (!loggedMissingDependencies)
+            {
+                Debug.LogWarning($"SpiderQueen missing refs - target: {(target ? target.name : "null")}, weaponHolder: {(weaponHolder != null)}, damageable: {(damageable != null)}", this);
+                loggedMissingDependencies = true;
+            }
             return;
+        }
 
         // Enrage check 
         if (!enraged && damageable.currentHP <= damageable.maxHP * enrageHealthFraction)
@@ -95,7 +103,7 @@ public class SpiderQueenController : ChasingMob2D
         }
         else
         {
-            // Decideattack mode based on the distance
+            // Decide attack mode based on the distance
             if (dist <= biteAttackRange)
             {
                 state = QueenState.MeleeAttacking;
@@ -142,7 +150,7 @@ public class SpiderQueenController : ChasingMob2D
                 break;
 
             case QueenState.RangedAttacking:
-                velocity = Vector2.zero;
+                velocity = dir * chaseSpeed;
                 if (weaponHolder != null)
                     weaponHolder.TryAttack();
                 break;

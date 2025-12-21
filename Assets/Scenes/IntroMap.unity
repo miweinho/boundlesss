@@ -762,7 +762,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7467e795c185b214693f0440cfc484c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sceneName: SkeletonScene
+  sceneName: SkeletonSceneReal
 --- !u!61 &546591315
 BoxCollider2D:
   m_ObjectHideFlags: 0

@@ -7,6 +7,10 @@ public class Damageable : MonoBehaviour, IDamageable
 {
     [SerializeField] private GameObject healthBarPrefab;
 
+    [Header("Death Drop")]
+    [SerializeField] private GameObject deathDropPrefab;
+    [SerializeField] private Vector3 deathDropOffset = Vector3.zero;
+
     public int team = 1; // enemies default team 1
     public int maxHP = 10;
     public int currentHP;
@@ -27,6 +31,8 @@ public class Damageable : MonoBehaviour, IDamageable
     private void Die()
     {
         OnDie?.Invoke();
+        if (deathDropPrefab != null)
+            Instantiate(deathDropPrefab, transform.position + deathDropOffset, Quaternion.identity);
         // play death anim, drop loot, etc.
         Destroy(gameObject);
     }

@@ -140,6 +140,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   healthBarPrefab: {fileID: 9071230968736776465, guid: c6da9ba4568d6b44e9bf67a4408fe57f, type: 3}
+  deathDropPrefab: {fileID: 7236278370911408593, guid: a054108ab1558e249ad1b5b3d2d72a3e, type: 3}
+  deathDropOffset: {x: 0, y: 0, z: 0}
   team: 1
   maxHP: 25
   currentHP: 25

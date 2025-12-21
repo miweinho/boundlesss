@@ -76,7 +76,7 @@ public class SpiderController : ChasingMob2D
 
         // flip sprite
         if (sr != null && Mathf.Abs(dir.x) > 0.01f)
-            sr.flipX = dir.x < 0f;
+            sr.flipX = dir.x > 0f;
     }
 
     protected override void FixedUpdate()
