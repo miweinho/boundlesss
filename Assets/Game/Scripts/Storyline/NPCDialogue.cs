@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -96,23 +97,71 @@ public class NPCDialogue : MonoBehaviour, IInteractable
     // === IInteractable ===
     public bool CanInteract() => !isDialogueActive;
 
+    public string GetInteractionPrompt()
+    {
+        // Text für dein Interact-Prompt/Indicator (z.B. im Player-UI)
+        return "Talk";
+    }
+
     public void Interact()
     {
-        // Don't early-return here: dialogueData may be selected inside StartDialogue().
+        // Important: don't early-return on dialogueData == null here
         if (!isDialogueActive) StartDialogue();
         else NextLine();
     }
 
-    public string GetInteractionPrompt() => !isDialogueActive ? "Talk [E]" : "";
+    private bool _forceDialogueData;
+
+    /// <summary>
+    /// Starts a dialogue with the given data, even if this object is not "in range".
+    /// Returns false if UI is not wired or data is null or a dialogue is already active.
+    /// </summary>
+    public bool StartDialogueForced(NPCDialogueData data)
+    {
+        if (isDialogueActive) return false;
+        if (data == null) return false;
+
+        dialogueData = data;
+        _forceDialogueData = true;
+
+        StartDialogue();
+        return true;
+    }
+
+    private void ApplyOptionalUI()
+    {
+        // Name: only show if set
+        if (nameText != null)
+        {
+            bool hasName = dialogueData != null && !string.IsNullOrWhiteSpace(dialogueData.npcName);
+            nameText.gameObject.SetActive(hasName);
+
+            if (hasName) nameText.SetText(dialogueData.npcName);
+            else nameText.SetText(string.Empty);
+        }
+
+        // Portrait: only show if sprite set
+        if (portraitImage != null)
+        {
+            bool hasPortrait = dialogueData != null && dialogueData.npcPortrait != null;
+            portraitImage.gameObject.SetActive(hasPortrait);
+            portraitImage.sprite = hasPortrait ? dialogueData.npcPortrait : null;
+        }
+    }
 
     // === Dialogue Flow ===
     void StartDialogue()
     {
-        SelectDialogueForCurrentProgress();
+        if (!_forceDialogueData)
+        {
+            SelectDialogueForCurrentProgress(); // your variants logic
+        }
+
+        _forceDialogueData = false;
 
         if (dialogueData == null)
         {
-            Debug.LogWarning($"[NPCDialogue] No dialogue data resolved on '{name}'. Assign Default Dialogue Data or add a matching Variant.");
+            Debug.LogWarning($"[NPCDialogue] No dialogueData resolved on '{name}'.");
             return;
         }
 
@@ -120,10 +169,12 @@ public class NPCDialogue : MonoBehaviour, IInteractable
         _waitingForChoice = false;
         dialogueIndex = 0;
 
-        nameText.SetText(dialogueData.name);
-        portraitImage.sprite = dialogueData.npcPortrait;
+        // Only show name/portrait when provided by the dialogue data
+        ApplyOptionalUI();
 
-        dialoguePanel.SetActive(true);
+        if (dialoguePanel != null)
+            dialoguePanel.SetActive(true);
+
         UpdateInteractIndicator();
 
         OpenDialogueUI();
@@ -358,6 +409,8 @@ public class NPCDialogue : MonoBehaviour, IInteractable
         }
     }
 
+    public event Action DialogueClosed;
+
     public void EndDialogue()
     {
         StopAllCoroutines();
@@ -366,11 +419,24 @@ public class NPCDialogue : MonoBehaviour, IInteractable
         isDialogueActive = false;
         _waitingForChoice = false;
 
-        dialogueText.SetText("");
-        dialoguePanel.SetActive(false);
+        if (dialogueText != null)
+            dialogueText.SetText("");
+
+        if (dialoguePanel != null)
+            dialoguePanel.SetActive(false);
+
+        // Optional: hide them on close (so the UI never shows stale values)
+        if (nameText != null) nameText.gameObject.SetActive(false);
+        if (portraitImage != null)
+        {
+            portraitImage.sprite = null;
+            portraitImage.gameObject.SetActive(false);
+        }
 
         CloseDialogueUI();
         UpdateInteractIndicator();
+
+        DialogueClosed?.Invoke();
     }
 
     private void OpenDialogueUI()
