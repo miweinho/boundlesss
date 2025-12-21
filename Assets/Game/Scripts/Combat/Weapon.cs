@@ -28,6 +28,20 @@ public class Weapon : MonoBehaviour
                 weaponVisualAnimator = vm.BowAnimator;
             }
         }
+        
+        if (weaponVisualAnimator != null &&
+            weaponVisualAnimator.GetComponentInParent<BowAnimationRelay>() == null)
+            weaponVisualAnimator = null;
+
+        if (data != null && weaponVisualAnimator == null && data.visualPrefab != null)
+        {
+            var visual = Instantiate(data.visualPrefab, transform);
+            visual.transform.localPosition = Vector3.zero;
+            visual.transform.localRotation = Quaternion.identity;
+            var anim = visual.GetComponentInChildren<Animator>();
+            if (anim != null && anim.GetComponentInParent<BowAnimationRelay>() != null)
+                weaponVisualAnimator = anim;
+        }
     }
 
     public bool TryAttack()
@@ -54,11 +68,11 @@ public class Weapon : MonoBehaviour
                 break;
 
             case WeaponKind.Ranged:
-            //Ranged attack trigger animation after end of bow animation attack will becalled.
+                //Ranged attack trigger animation; if no bow animator/relay, fire immediately.
                 if (weaponVisualAnimator != null)
-                {
-                weaponVisualAnimator.SetTrigger("Fire");
-                }
+                    weaponVisualAnimator.SetTrigger("Fire");
+                else
+                    DoRanged();
                 break;
 
             case WeaponKind.Bite:
@@ -168,8 +182,13 @@ public class Weapon : MonoBehaviour
             user.HandTransform
         );
 
-        // Small offset forward - unsure if worth keeping or not 
-        // hitboxGO.transform.localPosition += Vector3.right * 0.5f;
+        var aimDir = user.AimDirection.sqrMagnitude > 0.001f
+            ? user.AimDirection.normalized
+            : Vector2.right;
+
+        // Offset bite forward so it reaches the target when close.
+        float offset = Mathf.Max(0.1f, data.range * 0.5f);
+        hitboxGO.transform.localPosition += (Vector3)(aimDir * offset);
 
         int dmg = data.damage;
         if (holder)

@@ -45,6 +45,9 @@ public class SpiderQueenController : ChasingMob2D
         weaponHolder = GetComponent<WeaponHolder>();  
         damageable = GetComponent<Damageable>();
 
+        if (weaponHolder != null && damageable != null)
+            weaponHolder.SetTeam(damageable.team);
+
         baseChaseSpeed = chaseSpeed;              
 
         if (weaponHolder != null)

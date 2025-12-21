@@ -1,41 +1,61 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
-public class Goblincontroller : MonoBehaviour
+[RequireComponent(typeof(WeaponHolder))]
+    [RequireComponent(typeof(Damageable))]
+public class Goblincontroller : ChasingMob2D
 {
-    public Transform player;                 // Drag your Player here (or found by tag)
-    public float chaseSpeed = 3f;
+    [Header("Combat")]
+    [SerializeField, Min(0f)] private float attackRange = 1f;
+    [SerializeField] private WeaponHolder weaponHolder;
 
-    Rigidbody2D rb;
-    SpriteRenderer sr;
+    [Header("Targeting")]
+    [SerializeField] private string targetTagOverride = "Player";
 
-    void Awake()
+    private Damageable damageable;
+    private bool hasAggro;
+
+    protected override void Awake()
     {
-        rb = GetComponent<Rigidbody2D>();
-        sr = GetComponent<SpriteRenderer>();
-
-        // Top-down friendly defaults
-        rb.gravityScale = 0f;
-        rb.freezeRotation = true;
-
-        if (player == null)
-        {
-            var p = GameObject.FindGameObjectWithTag("morph");
-            if (p) player = p.transform;
-        }
+        targetTag = targetTagOverride;
+        base.Awake();
+        if (!weaponHolder) weaponHolder = GetComponent<WeaponHolder>();
+        damageable = GetComponent<Damageable>();
+        if (damageable != null)
+            damageable.OnHealthChanged += HandleHealthChanged;
     }
 
-    void FixedUpdate()
+    void Update()
     {
-        if (player == null) return;
+        if (!hasAggro) return;
+        if (!target || weaponHolder == null) return;
 
-        // Calculate direction towards the player
-        Vector2 desiredDir = ((Vector2)player.position - rb.position).normalized;
+        Vector2 toTarget = (Vector2)target.position - rb.position;
+        float dist = toTarget.magnitude;
+        if (dist <= 0.0001f) return;
 
-        // Move towards the player
-        Vector2 next = rb.position + desiredDir * chaseSpeed * Time.deltaTime;
-        rb.MovePosition(next);
+        Vector2 dir = toTarget / dist;
+        weaponHolder.SetAim(dir);
+
+        if (dist <= attackRange)
+            weaponHolder.TryAttack();
+    }
+
+    protected override void FixedUpdate()
+    {
+        if (!hasAggro) return;
+        base.FixedUpdate();
+    }
+
+    private void HandleHealthChanged(int current, int max)
+    {
+        if (current < max)
+            hasAggro = true;
+    }
+
+    private void OnDestroy()
+    {
+        if (damageable != null)
+            damageable.OnHealthChanged -= HandleHealthChanged;
     }
 }
