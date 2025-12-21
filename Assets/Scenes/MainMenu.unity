@@ -768,7 +768,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6df4aa159a8a10a4ea1030887044a03a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playButtonLabelTMP: {fileID: 0}
+  playButtonLabelTMP: {fileID: 1632452294}
   playButtonLabelUGUI: {fileID: 0}
 --- !u!114 &642373287
 MonoBehaviour:
