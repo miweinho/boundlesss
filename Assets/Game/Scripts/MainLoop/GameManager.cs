@@ -22,6 +22,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private string mainMenuSceneName = "MainMenu";
     [SerializeField] private string optionsMenuSceneName = "OptionsMenu";
 
+    [Header("Bootstrap / New Game")]
+    [SerializeField] private string bootstrapSceneName = "Bootstrap";
+    [SerializeField] private string firstGameplaySceneName = "IntroScene";
+
     private readonly List<string> _overlayStack = new();
     private string _previousActiveSceneName;
     private int _dialogPauseRequests;
@@ -264,5 +268,75 @@ public class GameManager : MonoBehaviour
     {
         if (string.IsNullOrWhiteSpace(key)) return defaultValue;
         return _flags.TryGetValue(key, out var v) ? v : defaultValue;
+    }
+
+    private bool IsMenuOpenedFromBootstrap() =>
+        string.Equals(_previousActiveSceneName, bootstrapSceneName, StringComparison.Ordinal);
+
+    private bool IsOverlaySceneName(string sceneName)
+    {
+        return string.Equals(sceneName, mainMenuSceneName, StringComparison.Ordinal)
+            || string.Equals(sceneName, optionsMenuSceneName, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Returns the "base" (non-overlay) scene name if one is loaded.
+    /// In additive overlay mode, this is the gameplay scene; in startup it is Bootstrap.
+    /// </summary>
+    private string GetBaseSceneName()
+    {
+        for (int i = 0; i < SceneManager.sceneCount; i++)
+        {
+            var s = SceneManager.GetSceneAt(i);
+            if (!s.IsValid() || !s.isLoaded) continue;
+
+            if (!IsOverlaySceneName(s.name))
+                return s.name;
+        }
+
+        return SceneManager.GetActiveScene().name;
+    }
+
+    public bool IsInBootstrapContext =>
+        string.Equals(GetBaseSceneName(), bootstrapSceneName, StringComparison.Ordinal);
+
+    /// <summary>
+    /// Resume should only be possible if a session exists and we are not sitting on Bootstrap.
+    /// </summary>
+    public bool CanResume => HasActiveGame && !IsInBootstrapContext;
+
+    public void StartNewGame()
+    {
+        // Only do a full reset when the base scene is Bootstrap.
+        if (!IsInBootstrapContext)
+        {
+            Debug.LogWarning($"[GameManager] StartNewGame() ignored: baseScene='{GetBaseSceneName()}' (not Bootstrap). Treating as Resume.");
+            HideMainMenuOverlay();
+            return;
+        }
+
+        Debug.Log("[GameManager] StartNewGame(): resetting state + loading first gameplay scene.");
+
+        // Reset runtime state
+        HasActiveGame = false;
+        _dialogPauseRequests = 0;
+        _overlayStack.Clear();
+        _previousActiveSceneName = bootstrapSceneName;
+
+        // Clear flags held in GameManager (if still used)
+        _flags.Clear();
+
+        // Clear persisted flags (Option B)
+        if (GameStateService.Instance != null)
+        {
+            GameStateService.Instance.DeleteSave();
+            GameStateService.Instance.Load();
+        }
+
+        // Start fresh session
+        HasActiveGame = true;
+        SetState(GameState.Playing);
+
+        SceneManager.LoadScene(firstGameplaySceneName, LoadSceneMode.Single);
     }
 }

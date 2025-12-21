@@ -5,7 +5,6 @@ using TMPro;
 
 public class MainMenuUI : MonoBehaviour
 {
-
     [Header("Play Button Label (optional)")]
     [SerializeField] private TMP_Text playButtonLabelTMP;
     [SerializeField] private Text playButtonLabelUGUI;
@@ -17,26 +16,32 @@ public class MainMenuUI : MonoBehaviour
 
     private void RefreshUI()
     {
-        bool hasGame = GameManager.Instance != null && GameManager.Instance.HasActiveGame;
+        bool canResume = GameManager.Instance != null && GameManager.Instance.CanResume;
+        string label = canResume ? "Resume" : "Play";
 
-        string label = hasGame ? "Resume" : "Play";
+        if (playButtonLabelTMP != null)
+            playButtonLabelTMP.text = label;
 
-        if (playButtonLabelTMP != null) playButtonLabelTMP.text = label;
-        if (playButtonLabelUGUI != null) playButtonLabelUGUI.text = label;
+        if (playButtonLabelUGUI != null)
+            playButtonLabelUGUI.text = label;
     }
 
     public void PlayGame()
     {
-        // close menu if game is active
-        if (GameManager.Instance != null && GameManager.Instance.HasActiveGame)
+        if (GameManager.Instance == null)
         {
-            GameManager.Instance.HideMainMenuOverlay();
-            GameManager.Instance.SetState(GameManager.GameState.Playing);
+            Debug.LogWarning("[MainMenuUI] No GameManager found. Loading Bootstrap.");
+            SceneManager.LoadScene("Bootstrap", LoadSceneMode.Single);
             return;
         }
 
-        // if there is no active game load intro scene newly
-        SceneManager.LoadScene("IntroScene", LoadSceneMode.Single);
+        if (GameManager.Instance.CanResume)
+        {
+            GameManager.Instance.HideMainMenuOverlay();
+            return;
+        }
+
+        GameManager.Instance.StartNewGame();
     }
 
     public void QuitGame()

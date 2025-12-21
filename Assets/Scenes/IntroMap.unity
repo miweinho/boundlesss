@@ -201,6 +201,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: morph
       objectReference: {fileID: 0}
+    - target: {fileID: 5792680794580881211, guid: 727268ce90ab3a14aab0685c7755c319, type: 3}
+      propertyPath: OutputAudioMixerGroup
+      value: 
+      objectReference: {fileID: 2478093709050196510, guid: aff477ff813994a45b485eab25c75554, type: 2}
     - target: {fileID: 5986127162894656087, guid: 727268ce90ab3a14aab0685c7755c319, type: 3}
       propertyPath: m_LocalPosition.x
       value: -15.46
