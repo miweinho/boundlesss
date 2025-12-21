@@ -160,7 +160,12 @@ public class Weapon : MonoBehaviour
 
     private void DoBite()
     {
-        if (!data.meleeHitboxPrefab || user.HandTransform == null) return;
+        if (!data.meleeHitboxPrefab || user.HandTransform == null)
+        {
+            if (holder != null && holder.DebugCombat)
+                Debug.Log("[Weapon] Bite skipped: missing hitbox prefab or hand transform.", holder);
+            return;
+        }
 
         // Spawn the bite hitbox at the hand/mouth
         var hitboxGO = Instantiate(
@@ -170,13 +175,9 @@ public class Weapon : MonoBehaviour
             user.HandTransform
         );
 
-        var aimDir = user.AimDirection.sqrMagnitude > 0.001f
-            ? user.AimDirection.normalized
-            : Vector2.right;
-
         // Offset bite forward so it reaches the target when close.
         float offset = Mathf.Max(0.1f, data.range * 0.5f);
-        hitboxGO.transform.localPosition += (Vector3)(aimDir * offset);
+        hitboxGO.transform.localPosition = Vector3.right * offset;
 
         int dmg = data.damage;
         if (holder)
@@ -187,7 +188,13 @@ public class Weapon : MonoBehaviour
         var hitbox = hitboxGO.GetComponent<Hitbox>();
         if (hitbox != null)
         {
+            if (holder != null && holder.DebugCombat)
+                hitbox.debugLog = true;
             hitbox.Configure(dmg, data.knockback, user.Team, user.AimDirection, shooterCol);
+        }
+        else if (holder != null && holder.DebugCombat)
+        {
+            Debug.Log("[Weapon] Bite hitbox prefab has no Hitbox component.", holder);
         }
     }
 

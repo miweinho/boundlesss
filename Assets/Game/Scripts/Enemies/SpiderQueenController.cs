@@ -32,6 +32,8 @@ public class SpiderQueenController : ChasingMob2D
     private bool enraged = false;
     private bool hasAggro = false;
     private bool loggedMissingDependencies = false;
+    [Header("Debug")]
+    [SerializeField] private bool enableDebugLogs = false;
 
     private enum QueenState { Idle, Chasing, RangedAttacking, MeleeAttacking }
     private QueenState state = QueenState.Idle;
@@ -124,6 +126,13 @@ public class SpiderQueenController : ChasingMob2D
             }
         }
         
+        if (enableDebugLogs)
+        {
+            Debug.Log($"[SpiderQueen] dist={dist:F2} state={state} hasAggro={hasAggro} " +
+                      $"weapon={(currentWeapon ? currentWeapon.name : "null")} " +
+                      $"biteRange={biteAttackRange} rangedRange={rangedAttackRange}", this);
+        }
+        
         if (dir != Vector2.zero)
         {
             weaponHolder.SetAim(dir); 
@@ -175,5 +184,7 @@ public class SpiderQueenController : ChasingMob2D
 
         weaponHolder.Equip(desired); 
         currentWeapon = desired;
+        if (enableDebugLogs)
+            Debug.Log($"[SpiderQueen] Equipped weapon: {desired.name}", this);
     }
 }

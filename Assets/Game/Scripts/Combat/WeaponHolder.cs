@@ -13,11 +13,14 @@ public class WeaponHolder : MonoBehaviour, IWeaponUser
     [SerializeField] private Animator animator;
     [SerializeField] private WeaponData startingWeapon;
     [SerializeField] private WeaponVisualManager visualManager;
+    [Header("Debug")]
+    [SerializeField] private bool debugCombat = false;
 
     public Transform HandTransform => handTransform;
     public int Team => team;
     public Vector2 AimDirection { get; private set; } = Vector2.right;
     public Animator Animator => animator;
+    public bool DebugCombat => debugCombat;
     public void SetTeam(int newTeam) => team = newTeam;
 
     private AudioSource audioSource;

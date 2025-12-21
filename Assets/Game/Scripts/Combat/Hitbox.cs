@@ -5,6 +5,7 @@ public class Hitbox : MonoBehaviour
 {
     [SerializeField] protected float lifetime = 0.1f;
     [SerializeField] protected Vector2 size = new Vector2(1f, 0.6f); // can be tuned per prefab
+    public bool debugLog = false;
 
     // Made protected so subclasses can see these if needed
     protected int damage;
@@ -49,6 +50,8 @@ public class Hitbox : MonoBehaviour
 
     protected virtual void OnTriggerEnter2D(Collider2D other)
     {
+        if (debugLog)
+            Debug.Log($"[Hitbox] Hit {other.name} dmg={damage} team={sourceTeam}", this);
         if (other.TryGetComponent<IDamageable>(out var dmg))
         {
             dmg.ApplyDamage(damage, dir, knockback, sourceTeam);
