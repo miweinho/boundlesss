@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SpiderQueenBow
   m_EditorClassIdentifier: 
   displayName: 
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 5ba4dba6765632b4aac3bdb0089be968, type: 3}
   kind: 1
   visualPrefab: {fileID: 4268265617118676936, guid: aa3f6cb1abb91d840b42dfeef0902b15, type: 3}
   damage: 4
