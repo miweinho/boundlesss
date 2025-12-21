@@ -2,11 +2,14 @@ using UnityEngine;
 
 public class Bootstrapper : MonoBehaviour
 {
-    [SerializeField] private bool showMainMenuOnStart = true;
-
     void Start()
     {
-        if (!showMainMenuOnStart) return;
+        // Ensure the global game-state service exists (flags/quests/decisions).
+        if (GameStateService.Instance == null)
+        {
+            var go = new GameObject("GameStateService");
+            go.AddComponent<GameStateService>();
+        }
 
         if (GameManager.Instance != null)
             GameManager.Instance.ShowMainMenuOverlay();

@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+#if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
+#endif
 
 public class GameManager : MonoBehaviour
 {
@@ -22,6 +24,10 @@ public class GameManager : MonoBehaviour
 
     private readonly List<string> _overlayStack = new();
     private string _previousActiveSceneName;
+    private int _dialogPauseRequests;
+
+    // Simple global flags (quests, dialogue decisions, unlocks, ...)
+    private readonly Dictionary<string, bool> _flags = new();
 
     void Awake()
     {
@@ -34,17 +40,55 @@ public class GameManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
         Time.timeScale = 1f;
+
+        // Keep overlay bookkeeping in sync with Unity scene loading.
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        // ...existing code...
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // When loading with Single, Unity unloads additive overlays automatically.
+        // Since GameManager is persistent, we must clear our overlay stack manually.
+        if (mode == LoadSceneMode.Single)
+        {
+            _overlayStack.Clear();
+            _previousActiveSceneName = scene.name;
+
+            Debug.Log($"[GameManager] SceneLoaded(Single): cleared overlay stack, active='{scene.name}'");
+        }
+    }
+
+    private bool EscapePressedThisFrame()
+    {
+#if ENABLE_INPUT_SYSTEM
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            return true;
+#endif
+#if ENABLE_LEGACY_INPUT_MANAGER
+        if (Input.GetKeyDown(KeyCode.Escape))
+            return true;
+#endif
+        return false;
     }
 
     void Update()
     {
-        // Global ESC handling (New Input System)
-        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
-        {
-            // If any overlay is open: close the topmost; otherwise open the main menu overlay.
-            if (_overlayStack.Count > 0) CloseTopOverlay();
-            else ShowMainMenuOverlay();
-        }
+        if (!EscapePressedThisFrame())
+            return;
+
+        // Drop stale entries first (e.g., after Single loads).
+        PruneOverlayStack();
+
+        Debug.Log($"[GameManager] ESC | State={State} | HasActiveGame={HasActiveGame} | overlays={_overlayStack.Count} | mainMenuLoaded={IsOverlayLoaded(mainMenuSceneName)}");
+
+        if (_overlayStack.Count > 0) CloseTopOverlay();
+        else ShowMainMenuOverlay();
     }
 
     public bool GameplayActive => State == GameState.Playing;
@@ -81,7 +125,11 @@ public class GameManager : MonoBehaviour
 
     public bool IsOverlayLoaded(string sceneName) => SceneManager.GetSceneByName(sceneName).isLoaded;
 
-    public void ShowMainMenuOverlay() => ShowOverlay(mainMenuSceneName);
+    public void ShowMainMenuOverlay()
+    {
+        Debug.Log("[GameManager] ShowMainMenuOverlay()");
+        ShowOverlay(mainMenuSceneName);
+    }
     public void HideMainMenuOverlay() => HideOverlay(mainMenuSceneName);
 
     public void ShowOptionsOverlay() => ShowOverlay(optionsMenuSceneName);
@@ -89,12 +137,17 @@ public class GameManager : MonoBehaviour
 
     public void CloseTopOverlay()
     {
+        // Ensure we don't try to close an overlay that isn't actually loaded anymore.
+        PruneOverlayStack();
+
         if (_overlayStack.Count == 0) return;
         HideOverlay(_overlayStack[^1]);
     }
 
     public void ShowOverlay(string sceneName)
     {
+        Debug.Log($"[GameManager] ShowOverlay('{sceneName}') requested");
+
         if (string.IsNullOrWhiteSpace(sceneName)) return;
         if (IsOverlayLoaded(sceneName)) return;
 
@@ -165,5 +218,51 @@ public class GameManager : MonoBehaviour
 
         // Resume or stay in main menu depending on whether a game exists.
         SetState(HasActiveGame ? GameState.Playing : GameState.MainMenu);
+    }
+
+    private void PruneOverlayStack()
+    {
+        // Remove any overlays from the stack that are not currently loaded.
+        for (int i = _overlayStack.Count - 1; i >= 0; i--)
+        {
+            if (!IsOverlayLoaded(_overlayStack[i]))
+                _overlayStack.RemoveAt(i);
+        }
+    }
+
+    public void BeginDialogPause()
+    {
+        _dialogPauseRequests++;
+        // Put the game into a dedicated dialog state (this should freeze gameplay).
+        SetState(GameState.UIDialog);
+    }
+
+    public void EndDialogPause()
+    {
+        _dialogPauseRequests = Mathf.Max(0, _dialogPauseRequests - 1);
+
+        // If another dialog is still open, keep the state as UIDialog.
+        if (_dialogPauseRequests > 0)
+            return;
+
+        // No dialog open anymore: return to the correct state.
+        // If any overlay is open, stay paused. Otherwise resume gameplay if a game session exists.
+        if (_overlayStack.Count > 0)
+            SetState(GameState.Paused);
+        else
+            SetState(HasActiveGame ? GameState.Playing : GameState.MainMenu);
+    }
+
+    public void SetFlag(string key, bool value)
+    {
+        if (string.IsNullOrWhiteSpace(key)) return;
+        _flags[key] = value;
+        Debug.Log($"[GameManager] Flag set: {key}={value}");
+    }
+
+    public bool GetFlag(string key, bool defaultValue = false)
+    {
+        if (string.IsNullOrWhiteSpace(key)) return defaultValue;
+        return _flags.TryGetValue(key, out var v) ? v : defaultValue;
     }
 }

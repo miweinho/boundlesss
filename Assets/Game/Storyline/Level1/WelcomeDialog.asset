@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: aa37cb42529b8074ea9085a40389a58e, type: 3}
-  m_Name: NewNPCDialogue
+  m_Name: WelcomeDialog
   m_EditorClassIdentifier: 
   npcName: Old Goblin
   npcPortrait: {fileID: -1933547308, guid: e9242c9dd0938cb45be66ca9cda6f16b, type: 3}
@@ -19,8 +19,21 @@ MonoBehaviour:
   - It has been a long time since ...
   - somebody escaped from that place.
   - Search for the goblin king he can help did.
-  autoProgressLines: 01010100
-  autoProgressDelay: 1.5
-  typingSpeed: 0.05
+  - Do you agree?
+  autoProgressLines: 0101010100
+  autoProgressDelay: 0.75
+  typingSpeed: 12
   voiceSound: {fileID: 0}
   voicePitch: 1
+  choiceSets:
+  - lineIndex: 4
+    choices:
+    - label: Yes i can help you!
+      nextLineIndex: -1
+      actions:
+      - flagKey: quest.goblin.accepted
+        flagValue: 1
+    - label: No thank you no interest.
+      nextLineIndex: -1
+      actions: []
+    onEnterLineActions: []
