@@ -10,13 +10,13 @@ GameObject:
   m_Component:
   - component: {fileID: 3712289456754666449}
   - component: {fileID: 1660918590241890672}
-  - component: {fileID: -8334992400418518103}
   - component: {fileID: -1895918432705418411}
   - component: {fileID: 2917687013016750495}
   - component: {fileID: 2912359199672662295}
   - component: {fileID: 2822378598399814521}
   - component: {fileID: 7121207350698041229}
   - component: {fileID: 4725995907422680116}
+  - component: {fileID: 604477342646135782}
   m_Layer: 0
   m_Name: SkeletonArcher
   m_TagString: Untagged
@@ -67,51 +67,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!61 &-8334992400418518103
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4836082378476139113}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1}
-  m_EdgeRadius: 0
 --- !u!114 &-1895918432705418411
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -140,6 +95,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   healthBarPrefab: {fileID: 9071230968736776465, guid: c6da9ba4568d6b44e9bf67a4408fe57f, type: 3}
+  deathDropPrefab: {fileID: 7236278370911408593, guid: a054108ab1558e249ad1b5b3d2d72a3e, type: 3}
+  deathDropOffset: {x: 0, y: 0, z: 0}
   team: 1
   maxHP: 25
   currentHP: 25
@@ -323,6 +280,75 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hand: {fileID: 2218430196020020276}
+--- !u!60 &604477342646135782
+PolygonCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4836082378476139113}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 1, y: 1}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Points:
+    m_Paths:
+    - - {x: -0.12151846, y: 0.44180164}
+      - {x: -0.12919244, y: 0.37681764}
+      - {x: -0.18736549, y: 0.37991753}
+      - {x: -0.19027343, y: 0.3252896}
+      - {x: -0.25469476, y: 0.3164683}
+      - {x: -0.24963292, y: -0.059258163}
+      - {x: -0.30998272, y: -0.060146287}
+      - {x: -0.31509948, y: -0.18687266}
+      - {x: -0.2555824, y: -0.19717044}
+      - {x: -0.25714242, y: -0.31025565}
+      - {x: -0.18963644, y: -0.31478295}
+      - {x: -0.18954402, y: -0.379403}
+      - {x: 0.19135296, y: -0.38711303}
+      - {x: 0.19216108, y: -0.3285679}
+      - {x: 0.25027278, y: -0.3317734}
+      - {x: 0.25818604, y: -0.20117426}
+      - {x: 0.32152054, y: -0.18294778}
+      - {x: 0.3145716, y: -0.06463399}
+      - {x: 0.26356712, y: -0.057777524}
+      - {x: 0.25536868, y: 0.31697765}
+      - {x: 0.19435388, y: 0.32469696}
+      - {x: 0.19451182, y: 0.38142493}
+      - {x: 0.13347991, y: 0.39168653}
+      - {x: 0.12609965, y: 0.45043987}
+  m_UseDelaunayMesh: 0
 --- !u!1 &8606388922440648690
 GameObject:
   m_ObjectHideFlags: 0

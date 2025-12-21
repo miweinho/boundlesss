@@ -7,8 +7,13 @@ public class CameraFollow : MonoBehaviour
 
     void Start()
     {
-        if (target == null && GameObject.FindGameObjectWithTag("Player"))
-            target = GameObject.FindGameObjectWithTag("Player").transform;
+        if (target == null) TryFindTarget();
+
+        if (target != null)
+        {
+            var p = target.position;
+            transform.position = new Vector3(p.x, p.y, transform.position.z); // snap once
+        }
     }
 
     void LateUpdate()
@@ -17,5 +22,11 @@ public class CameraFollow : MonoBehaviour
         transform.position = new Vector3(target.position.x + offset.x,
                                          target.position.y + offset.y,
                                          transform.position.z + offset.z);
+    }
+
+    void TryFindTarget()
+    {
+        if (GameObject.FindGameObjectWithTag("Player"))
+            target = GameObject.FindGameObjectWithTag("Player").transform;
     }
 }

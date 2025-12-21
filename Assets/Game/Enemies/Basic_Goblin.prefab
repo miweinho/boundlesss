@@ -47,6 +47,7 @@ GameObject:
   - component: {fileID: -8799115416946898339}
   - component: {fileID: 8481482702943993103}
   - component: {fileID: 7996747742739537895}
+  - component: {fileID: -3558350186808176324}
   m_Layer: 9
   m_Name: Basic_Goblin
   m_TagString: Untagged
@@ -235,7 +236,7 @@ MonoBehaviour:
   handTransform: {fileID: 6084082234848357845}
   team: 1
   animator: {fileID: 0}
-  startingWeapon: {fileID: 11400000, guid: a05e9b3054fd1c5459fc7b17a84c5d57, type: 2}
+  startingWeapon: {fileID: 11400000, guid: 0f3defb2f065a5c4094e60b582f85456, type: 2}
   visualManager: {fileID: 7996747742739537895}
 --- !u!114 &5551758664688694557
 MonoBehaviour:
@@ -250,6 +251,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   healthBarPrefab: {fileID: 9071230968736776465, guid: c6da9ba4568d6b44e9bf67a4408fe57f, type: 3}
+  deathDropPrefab: {fileID: 7236278370911408593, guid: a054108ab1558e249ad1b5b3d2d72a3e, type: 3}
+  deathDropOffset: {x: 0, y: 0, z: 0}
   team: 1
   maxHP: 100
   currentHP: 100
@@ -338,3 +341,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hand: {fileID: 6084082234848357845}
+--- !u!114 &-3558350186808176324
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9048155023187915285}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 05f0be152d6964a4c81c6d36b92eba3b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  chaseSpeed: 3
+  stopDistance: 1
+  attackRange: 1
+  weaponHolder: {fileID: 0}
+  targetTagOverride: Player

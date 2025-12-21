@@ -7,19 +7,31 @@ public class Damageable : MonoBehaviour, IDamageable
 {
     [SerializeField] private GameObject healthBarPrefab;
 
+    [Header("Death Drop")]
+    [SerializeField] private GameObject deathDropPrefab;
+    [SerializeField] private Vector3 deathDropOffset = Vector3.zero;
+
     public int team = 1; // enemies default team 1
     public int maxHP = 10;
     public int currentHP;
     public event Action OnDie;
     public event Action<int, int> OnHealthChanged;
 
+    // Fired whenever any Damageable receives damage. Parameters: victim, attacker (attacker may be null)
+    public static event Action<Damageable> OnAnyDamaged;
+
     void Awake() => currentHP = maxHP;
 
     public void ApplyDamage(int amount, Vector2 hitDirection, float knockback, int sourceTeam)
     {
         if (sourceTeam == team) return; // no friendly fire
+
         currentHP -= amount;
         OnHealthChanged?.Invoke(currentHP, maxHP);
+
+        // notify listeners about this damage event
+        OnAnyDamaged?.Invoke(this);
+
         // TODO: knockback via Rigidbody2D
         if (currentHP <= 0) Die();
     }
@@ -27,6 +39,8 @@ public class Damageable : MonoBehaviour, IDamageable
     private void Die()
     {
         OnDie?.Invoke();
+        if (deathDropPrefab != null)
+            Instantiate(deathDropPrefab, transform.position + deathDropOffset, Quaternion.identity);
         // play death anim, drop loot, etc.
         Destroy(gameObject);
     }

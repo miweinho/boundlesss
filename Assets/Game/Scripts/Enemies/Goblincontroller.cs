@@ -1,41 +1,93 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
-public class Goblincontroller : MonoBehaviour
+[RequireComponent(typeof(WeaponHolder))]
+[RequireComponent(typeof(Damageable))]
+public class Goblincontroller : ChasingMob2D
 {
-    public Transform player;                 // Drag your Player here (or found by tag)
-    public float chaseSpeed = 3f;
+    [Header("Combat")]
+    [SerializeField, Min(0f)] private float attackRange = 1f;
+    [SerializeField] private WeaponHolder weaponHolder;
 
-    Rigidbody2D rb;
-    SpriteRenderer sr;
+    [Header("Targeting")]
+    [SerializeField] private string targetTagOverride = "Player";
 
-    void Awake()
+    [Header("Aggro")]
+    [Tooltip("Distance at which this mob will start chasing/attacking the player when aggressive.")]
+    [SerializeField] private float aggroActivationDistance = 8f;
+
+    private Damageable damageable;
+    private bool hasAggro;
+
+    protected override void Awake()
     {
-        rb = GetComponent<Rigidbody2D>();
-        sr = GetComponent<SpriteRenderer>();
+        targetTag = targetTagOverride;
+        base.Awake();
+        if (!weaponHolder) weaponHolder = GetComponent<WeaponHolder>();
+        damageable = GetComponent<Damageable>();
+        if (damageable != null)
+            damageable.OnHealthChanged += HandleHealthChanged;
+    }
 
-        // Top-down friendly defaults
-        rb.gravityScale = 0f;
-        rb.freezeRotation = true;
+    private void OnEnable()
+    {
+        // subscribe to the global damage event
+        Damageable.OnAnyDamaged += HandleAnyDamaged;
+    }
 
-        if (player == null)
+    private void OnDisable()
+    {
+        Damageable.OnAnyDamaged -= HandleAnyDamaged;
+    }
+
+    // Global damage handler: mark mob as aggressive when any damage happens.
+    // Signature matches Damageable.OnAnyDamaged(Damageable, GameObject)
+    private void HandleAnyDamaged(Damageable victim)
+    {
+        // become aggressive (movement/attack will only occur if player is within activation distance)
+        hasAggro = true;
+    }
+
+    void Update()
+    {
+        if (!hasAggro) return;
+        if (!target || weaponHolder == null) return;
+
+        Vector2 toTarget = (Vector2)target.position - rb.position;
+        float dist = toTarget.magnitude;
+        if (dist <= 0.0001f) return;
+
+        // Only aim / attack if within activation distance
+        if (dist <= aggroActivationDistance)
         {
-            var p = GameObject.FindGameObjectWithTag("morph");
-            if (p) player = p.transform;
+            Vector2 dir = toTarget / dist;
+            weaponHolder.SetAim(dir);
+
+            if (dist <= attackRange)
+                weaponHolder.TryAttack();
         }
     }
 
-    void FixedUpdate()
+    protected override void FixedUpdate()
     {
-        if (player == null) return;
+        // Only chase (movement) if aggressive AND player within activation distance
+        if (!hasAggro || target == null) return;
 
-        // Calculate direction towards the player
-        Vector2 desiredDir = ((Vector2)player.position - rb.position).normalized;
+        float dist = Vector2.Distance(transform.position, target.position);
+        if (dist > aggroActivationDistance) return;
 
-        // Move towards the player
-        Vector2 next = rb.position + desiredDir * chaseSpeed * Time.deltaTime;
-        rb.MovePosition(next);
+        base.FixedUpdate();
+    }
+
+    private void HandleHealthChanged(int current, int max)
+    {
+        if (current < max)
+            hasAggro = true;
+    }
+
+    private void OnDestroy()
+    {
+        if (damageable != null)
+            damageable.OnHealthChanged -= HandleHealthChanged;
     }
 }

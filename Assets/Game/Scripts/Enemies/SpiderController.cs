@@ -9,12 +9,14 @@ public class SpiderController : ChasingMob2D
     [SerializeField] private float aggroRange = 5f;    
     [SerializeField] private float disengageRange = 8f;     
     [SerializeField] private float attackRange = 1.2f;       
+    [SerializeField] private float attackCloseBuffer = 0.35f; 
     [SerializeField, Range(0f, 1f)] private float lowHealthFraction = 0.3f; 
     [SerializeField] private float retreatSafeDistance = 10f;
     [SerializeField] private float retreatSpeedMultiplier = 1.3f;
 
     private WeaponHolder weaponHolder;
     private Damageable damageable;
+    private Animator anim; 
 
     private enum SpiderState { Idle, Chasing, Attacking, Retreating }
     private SpiderState state = SpiderState.Idle;
@@ -25,6 +27,7 @@ public class SpiderController : ChasingMob2D
         base.Awake();
         weaponHolder = GetComponent<WeaponHolder>();
         damageable = GetComponent<Damageable>();
+        anim = GetComponent<Animator>();
     }
 
     void Update()
@@ -73,7 +76,7 @@ public class SpiderController : ChasingMob2D
 
         // flip sprite
         if (sr != null && Mathf.Abs(dir.x) > 0.01f)
-            sr.flipX = dir.x < 0f;
+            sr.flipX = dir.x > 0f;
     }
 
     protected override void FixedUpdate()
@@ -97,7 +100,15 @@ public class SpiderController : ChasingMob2D
                 break;
 
             case SpiderState.Attacking:
-                velocity = Vector2.zero;
+                float desiredStopDistance = Mathf.Max(0f, attackRange - attackCloseBuffer);
+                if (dist > desiredStopDistance)
+                {
+                    velocity = dir * chaseSpeed;
+                }
+                else
+                {
+                    velocity = Vector2.zero;
+                }
                 if (weaponHolder != null)
                     weaponHolder.TryAttack();
                 break;
@@ -108,6 +119,16 @@ public class SpiderController : ChasingMob2D
                 else
                     velocity = Vector2.zero;
                 break;
+        }
+
+        // Flip sprite to face movement direction
+        if (sr != null && Mathf.Abs(velocity.x) > 0.01f)
+            {
+            sr.flipX = velocity.x < 0f;
+        }
+
+        if (anim != null) {
+            anim.SetFloat("Speed", velocity.magnitude);
         }
 
         rb.MovePosition(rb.position + velocity * Time.fixedDeltaTime);

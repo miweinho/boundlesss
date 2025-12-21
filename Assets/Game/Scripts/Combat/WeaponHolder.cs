@@ -18,12 +18,12 @@ public class WeaponHolder : MonoBehaviour, IWeaponUser
     public int Team => team;
     public Vector2 AimDirection { get; private set; } = Vector2.right;
     public Animator Animator => animator;
+    public void SetTeam(int newTeam) => team = newTeam;
 
     private AudioSource audioSource;
     private Weapon equipped;
-    
 
-    
+    public bool HasEquippedWeapon => equipped != null;
 
     void Awake()
     {
