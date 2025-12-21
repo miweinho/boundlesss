@@ -29,19 +29,7 @@ public class Weapon : MonoBehaviour
             }
         }
         
-        if (weaponVisualAnimator != null &&
-            weaponVisualAnimator.GetComponentInParent<BowAnimationRelay>() == null)
-            weaponVisualAnimator = null;
-
-        if (data != null && weaponVisualAnimator == null && data.visualPrefab != null)
-        {
-            var visual = Instantiate(data.visualPrefab, transform);
-            visual.transform.localPosition = Vector3.zero;
-            visual.transform.localRotation = Quaternion.identity;
-            var anim = visual.GetComponentInChildren<Animator>();
-            if (anim != null && anim.GetComponentInParent<BowAnimationRelay>() != null)
-                weaponVisualAnimator = anim;
-        }
+        
     }
 
     public bool TryAttack()

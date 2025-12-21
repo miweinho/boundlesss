@@ -10,6 +10,7 @@ public abstract class ChasingMob2D : BaseMob2D
     [Header("Chasing Attributes")]
     [SerializeField, Range(0f, 20f)] protected float chaseSpeed = 3f; // default chase speed
     [SerializeField, Range(0f, 10f)] protected float stopDistance = 1f; // default stop distance
+    [SerializeField, Range(0f, 50f)] protected float chaseRange = 6f; // start chasing only within this range
 
     protected override void Awake()
     {
@@ -36,6 +37,7 @@ public abstract class ChasingMob2D : BaseMob2D
         // Calculate direction towards the target
         Vector2 toTarget = (Vector2)target.position - rb.position;
         float dist = toTarget.magnitude;
+        if (dist > chaseRange) return;
         if (dist <= stopDistance) return;
 
         Vector2 dir = toTarget.normalized;

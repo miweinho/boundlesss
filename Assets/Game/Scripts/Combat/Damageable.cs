@@ -17,13 +17,21 @@ public class Damageable : MonoBehaviour, IDamageable
     public event Action OnDie;
     public event Action<int, int> OnHealthChanged;
 
+    // Fired whenever any Damageable receives damage. Parameters: victim, attacker (attacker may be null)
+    public static event Action<Damageable> OnAnyDamaged;
+
     void Awake() => currentHP = maxHP;
 
     public void ApplyDamage(int amount, Vector2 hitDirection, float knockback, int sourceTeam)
     {
         if (sourceTeam == team) return; // no friendly fire
+
         currentHP -= amount;
         OnHealthChanged?.Invoke(currentHP, maxHP);
+
+        // notify listeners about this damage event
+        OnAnyDamaged?.Invoke(this);
+
         // TODO: knockback via Rigidbody2D
         if (currentHP <= 0) Die();
     }
