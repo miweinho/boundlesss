@@ -21,9 +21,8 @@ public class WeaponHolder : MonoBehaviour, IWeaponUser
 
     private AudioSource audioSource;
     private Weapon equipped;
-    
 
-    
+    public bool HasEquippedWeapon => equipped != null;
 
     void Awake()
     {

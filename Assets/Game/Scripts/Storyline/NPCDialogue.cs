@@ -7,7 +7,7 @@ using TMPro;
 
 public class NPCDialogue : MonoBehaviour, IInteractable
 {
-    [System.Serializable]
+    [Serializable]
     public class DialogueVariant
     {
         public string id;
@@ -26,6 +26,72 @@ public class NPCDialogue : MonoBehaviour, IInteractable
     [SerializeField] private NPCDialogueData defaultDialogueData;
 
     private DialogueVariant _activeVariant;
+
+    [Header("Dialogue Data")]
+    public NPCDialogueData dialogueData;
+
+    [Header("UI Prefab (recommended)")]
+    [SerializeField] private NPCDialogueView dialogueViewPrefab;
+    [SerializeField] private Transform uiParentOverride;
+    private NPCDialogueView _viewInstance;
+
+    [Header("UI References (fallback if no prefab)")]
+    public GameObject dialoguePanel;
+    public TMP_Text dialogueText;
+    public TMP_Text nameText;
+    public Image portraitImage;
+
+    [Header("Choices UI")]
+    [SerializeField] private Transform choicesRoot;
+    [SerializeField] private Button choiceButtonPrefab;
+
+    [Header("Proximity Indicator")]
+    public GameObject interactIndicator;
+
+    private readonly List<Button> _spawnedChoiceButtons = new();
+
+    private int dialogueIndex;
+    private bool isTyping;
+    private bool isDialogueActive;
+    private bool playerInRange;
+    private bool _didRequestDialogPause;
+    private bool _waitingForChoice;
+
+    private bool _forceDialogueData;
+
+    public event Action DialogueClosed;
+
+    void Awake()
+    {
+        EnsureView();
+    }
+
+    private void EnsureView()
+    {
+        if (_viewInstance != null)
+            return;
+
+        if (dialogueViewPrefab == null)
+            return; // fallback: user wires fields manually
+
+        Transform parent = uiParentOverride != null ? uiParentOverride : null;
+        _viewInstance = Instantiate(dialogueViewPrefab, parent);
+
+        // Wire NPCDialogue fields from the view
+        dialoguePanel = _viewInstance.dialoguePanel;
+        dialogueText = _viewInstance.dialogueText;
+        nameText = _viewInstance.npcNameText;
+        portraitImage = _viewInstance.portraitImage;
+
+        choicesRoot = _viewInstance.choicesRoot;
+        choiceButtonPrefab = _viewInstance.choiceButtonPrefab;
+
+        if (_viewInstance.exitButton != null)
+            _viewInstance.exitButton.onClick.AddListener(EndDialogue);
+
+        if (dialoguePanel != null)
+            dialoguePanel.SetActive(false);
+    }
 
     private NPCDialogueData ResolveDialogueData()
     {
@@ -58,63 +124,24 @@ public class NPCDialogue : MonoBehaviour, IInteractable
         return defaultValue;
     }
 
-    // Call this at the start of your dialogue opening logic:
     private void SelectDialogueForCurrentProgress()
     {
         dialogueData = ResolveDialogueData();
     }
 
-    [Header("Dialogue Data")]
-    public NPCDialogueData dialogueData;
-
-    [Header("UI References")]
-    public GameObject dialoguePanel;
-    public TMP_Text dialogueText;
-    public TMP_Text nameText;
-    public Image portraitImage;
-
-    [Header("Choices UI")]
-    [SerializeField] private Transform choicesRoot;
-    [SerializeField] private Button choiceButtonPrefab;
-
-    [Header("Proximity Indicator")]
-    public GameObject interactIndicator;
-
-    private readonly List<Button> _spawnedChoiceButtons = new();
-
-    private int dialogueIndex;
-    private bool isTyping;
-    private bool isDialogueActive;
-    private bool playerInRange;
-    private bool _didRequestDialogPause;
-    private bool _waitingForChoice;
-
-    void Awake()
-    {
-        SetChoicesVisible(false);
-    }
-
     // === IInteractable ===
     public bool CanInteract() => !isDialogueActive;
 
-    public string GetInteractionPrompt()
-    {
-        // Text für dein Interact-Prompt/Indicator (z.B. im Player-UI)
-        return "Talk";
-    }
+    public string GetInteractionPrompt() => "Talk";
 
     public void Interact()
     {
-        // Important: don't early-return on dialogueData == null here
         if (!isDialogueActive) StartDialogue();
         else NextLine();
     }
 
-    private bool _forceDialogueData;
-
     /// <summary>
     /// Starts a dialogue with the given data, even if this object is not "in range".
-    /// Returns false if UI is not wired or data is null or a dialogue is already active.
     /// </summary>
     public bool StartDialogueForced(NPCDialogueData data)
     {
@@ -128,19 +155,30 @@ public class NPCDialogue : MonoBehaviour, IInteractable
         return true;
     }
 
+    /// <summary>
+    /// Starts dialogue using the normal resolution flow (variants/defaultDialogueData),
+    /// intended for zone triggers (no interaction prompt needed).
+    /// </summary>
+    public bool StartDialogueFromTrigger()
+    {
+        if (isDialogueActive) return false;
+
+        _forceDialogueData = false; // ensure we use SelectDialogueForCurrentProgress()
+        StartDialogue();
+        return true;
+    }
+
     private void ApplyOptionalUI()
     {
-        // Name: only show if set
+        // Name
         if (nameText != null)
         {
             bool hasName = dialogueData != null && !string.IsNullOrWhiteSpace(dialogueData.npcName);
             nameText.gameObject.SetActive(hasName);
-
-            if (hasName) nameText.SetText(dialogueData.npcName);
-            else nameText.SetText(string.Empty);
+            nameText.SetText(hasName ? dialogueData.npcName : string.Empty);
         }
 
-        // Portrait: only show if sprite set
+        // Portrait
         if (portraitImage != null)
         {
             bool hasPortrait = dialogueData != null && dialogueData.npcPortrait != null;
@@ -152,10 +190,10 @@ public class NPCDialogue : MonoBehaviour, IInteractable
     // === Dialogue Flow ===
     void StartDialogue()
     {
+        EnsureView();
+
         if (!_forceDialogueData)
-        {
-            SelectDialogueForCurrentProgress(); // your variants logic
-        }
+            SelectDialogueForCurrentProgress();
 
         _forceDialogueData = false;
 
@@ -165,16 +203,19 @@ public class NPCDialogue : MonoBehaviour, IInteractable
             return;
         }
 
+        if (dialoguePanel == null || dialogueText == null)
+        {
+            Debug.LogError($"[NPCDialogue] UI not wired on '{name}'. Need dialoguePanel + dialogueText (or assign dialogueViewPrefab).");
+            return;
+        }
+
         isDialogueActive = true;
         _waitingForChoice = false;
         dialogueIndex = 0;
 
-        // Only show name/portrait when provided by the dialogue data
         ApplyOptionalUI();
 
-        if (dialoguePanel != null)
-            dialoguePanel.SetActive(true);
-
+        dialoguePanel.SetActive(true);
         UpdateInteractIndicator();
 
         OpenDialogueUI();
@@ -186,7 +227,7 @@ public class NPCDialogue : MonoBehaviour, IInteractable
     void NextLine()
     {
         if (_waitingForChoice)
-            return; // Choices must be answered first
+            return;
 
         if (isTyping)
         {
@@ -194,23 +235,17 @@ public class NPCDialogue : MonoBehaviour, IInteractable
             dialogueText.SetText(dialogueData.dialogueLines[dialogueIndex]);
             isTyping = false;
 
-            // If this line has choices, show them immediately after fast-forward.
             TryShowChoicesForCurrentLine();
             return;
         }
 
-        // If this line has choices, do not advance automatically.
         if (TryShowChoicesForCurrentLine())
             return;
 
         if (++dialogueIndex < dialogueData.dialogueLines.Length)
-        {
             StartCurrentLine();
-        }
         else
-        {
             EndDialogue();
-        }
     }
 
     private IEnumerator TypeLineUnscaled(string line, float charsPerSecond)
@@ -243,11 +278,9 @@ public class NPCDialogue : MonoBehaviour, IInteractable
 
         isTyping = false;
 
-        // If there are choices, present them; do not auto-progress.
         if (TryShowChoicesForCurrentLine())
             yield break;
 
-        // Auto-progress only when enabled for this line AND there are no choices.
         if (dialogueData.autoProgressLines != null &&
             dialogueData.autoProgressLines.Length > dialogueIndex &&
             dialogueData.autoProgressLines[dialogueIndex])
@@ -318,7 +351,6 @@ public class NPCDialogue : MonoBehaviour, IInteractable
             var a = actions[i];
             if (a == null || string.IsNullOrWhiteSpace(a.flagKey)) continue;
 
-            // Prefer GameStateService (Option B). Fallback keeps project working if service isn't present.
             if (GameStateService.Instance != null)
                 GameStateService.Instance.SetFlag(a.flagKey, a.flagValue);
             else if (GameManager.Instance != null)
@@ -347,7 +379,6 @@ public class NPCDialogue : MonoBehaviour, IInteractable
             ApplyActions(set.onEnterLineActions);
     }
 
-    // Call this right before you start typing a line (or right after setting dialogueIndex).
     private void StartCurrentLine()
     {
         OnEnterLine(dialogueIndex);
@@ -356,7 +387,6 @@ public class NPCDialogue : MonoBehaviour, IInteractable
 
     private void OnChoiceSelected(NPCDialogueData.DialogueChoice choice)
     {
-        // Apply choice actions (flags) immediately on click
         ApplyActions(choice.actions);
 
         _waitingForChoice = false;
@@ -381,13 +411,10 @@ public class NPCDialogue : MonoBehaviour, IInteractable
         }
         _spawnedChoiceButtons.Clear();
 
-        // Also clear any template/leftover children under the root (e.g., a button placed in the scene).
         if (choicesRoot != null)
         {
             for (int i = choicesRoot.childCount - 1; i >= 0; i--)
-            {
                 Destroy(choicesRoot.GetChild(i).gameObject);
-            }
         }
 
         SetChoicesVisible(false);
@@ -409,8 +436,6 @@ public class NPCDialogue : MonoBehaviour, IInteractable
         }
     }
 
-    public event Action DialogueClosed;
-
     public void EndDialogue()
     {
         StopAllCoroutines();
@@ -425,7 +450,6 @@ public class NPCDialogue : MonoBehaviour, IInteractable
         if (dialoguePanel != null)
             dialoguePanel.SetActive(false);
 
-        // Optional: hide them on close (so the UI never shows stale values)
         if (nameText != null) nameText.gameObject.SetActive(false);
         if (portraitImage != null)
         {
@@ -484,5 +508,17 @@ public class NPCDialogue : MonoBehaviour, IInteractable
     {
         if (interactIndicator == null) return;
         interactIndicator.SetActive(playerInRange && CanInteract());
+    }
+
+    public void ConfigureView(NPCDialogueView viewPrefab, Transform parentOverride = null)
+    {
+        if (viewPrefab == null) return;
+
+        dialogueViewPrefab = viewPrefab;
+        if (parentOverride != null)
+            uiParentOverride = parentOverride;
+
+        // Ensure the view exists immediately (so triggers can show it right away)
+        EnsureView();
     }
 }

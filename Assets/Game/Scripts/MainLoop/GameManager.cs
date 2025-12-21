@@ -339,4 +339,21 @@ public class GameManager : MonoBehaviour
 
         SceneManager.LoadScene(firstGameplaySceneName, LoadSceneMode.Single);
     }
+
+#if UNITY_EDITOR
+    /// <summary>
+    /// Editor-only: When starting a gameplay scene directly, force a valid "in-game" state.
+    /// Avoids needing access to HasActiveGame setter or GameState enum from other classes.
+    /// </summary>
+    public void ForceGameplayForTesting()
+    {
+        HasActiveGame = true;
+
+        // Use your existing state machine internally (private access is fine here).
+        SetState(GameState.Playing);
+
+        // Ensure we are not stuck paused by overlays/dialog
+        EndDialogPause();
+    }
+#endif
 }

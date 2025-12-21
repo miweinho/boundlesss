@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(Collider2D))]
+[RequireComponent(typeof(NPCDialogue))]
 public class PortalTeleporter : MonoBehaviour
 {
     [Header("Target Scene")]
@@ -11,20 +12,14 @@ public class PortalTeleporter : MonoBehaviour
     [SerializeField] private string requiredFlagKey; // e.g. "quest.sylas.completed"
     [SerializeField] private bool requiredFlagValue = true;
 
-    [Header("Locked Dialogue")]
-    [Tooltip("Scene object with NPCDialogue (Presenter). If null, prefab will be instantiated.")]
-    [SerializeField] private NPCDialogue dialoguePresenter;
+    private NPCDialogue _dialogue;
 
-    [Tooltip("Optional prefab that contains NPCDialogue + your dialogue UI wired.")]
-    [SerializeField] private NPCDialogue dialoguePresenterPrefab;
-
-    [SerializeField] private NPCDialogueData lockedDialogueData;
-
-    private NPCDialogue _spawnedPresenter;
-
-    private void Reset()
+    private void Awake()
     {
-        GetComponent<Collider2D>().isTrigger = true;
+        var col = GetComponent<Collider2D>();
+        col.isTrigger = true;
+
+        _dialogue = GetComponent<NPCDialogue>();
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -34,34 +29,14 @@ public class PortalTeleporter : MonoBehaviour
 
         if (!CanUsePortal())
         {
-            var presenter = GetPresenter();
-            if (presenter != null && lockedDialogueData != null)
-                presenter.StartDialogueForced(lockedDialogueData);
-
+            // Same setup as NPC: use the NPCDialogue on THIS portal object
+            // (defaultDialogueData/variants decide what gets shown)
+            _dialogue.StartDialogueFromTrigger();
             return;
         }
 
-        // Teleport
         player.MoveAction.Disable();
         SceneManager.LoadScene(sceneName, LoadSceneMode.Single);
-    }
-
-    private NPCDialogue GetPresenter()
-    {
-        if (dialoguePresenter != null)
-            return dialoguePresenter;
-
-        if (_spawnedPresenter != null)
-            return _spawnedPresenter;
-
-        if (dialoguePresenterPrefab == null)
-        {
-            Debug.LogWarning("[PortalTeleporter] No dialogue presenter assigned (scene ref or prefab).");
-            return null;
-        }
-
-        _spawnedPresenter = Instantiate(dialoguePresenterPrefab);
-        return _spawnedPresenter;
     }
 
     private bool CanUsePortal()

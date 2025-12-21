@@ -1,82 +1,53 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Collider2D))]
+[RequireComponent(typeof(NPCDialogue))]
 public class TutorialDialogueTrigger2D : MonoBehaviour
 {
-    [Header("Dialogue")]
-    [SerializeField] private NPCDialogue dialoguePresenter;
-    [SerializeField] private NPCDialogueData dialogueData;
-
-    [Header("One-shot (optional)")]
-    [SerializeField] private bool triggerOnce = true;
+    [Header("One-time Gate")]
     [SerializeField] private string seenFlagKey; // e.g. "tutorial.move.seen"
+    [SerializeField] private bool disableTriggerAfterShow = true;
 
-    [Header("Player Control")]
-    [SerializeField] private bool disablePlayerMoveWhileOpen = true;
+    private Collider2D _col;
+    private NPCDialogue _dialogue;
 
-    private bool _triggered;
-    private PlayerController _player;
-
-    void Reset()
+    private void Awake()
     {
-        var col = GetComponent<Collider2D>();
-        col.isTrigger = true;
+        _col = GetComponent<Collider2D>();
+        _col.isTrigger = true;
+
+        _dialogue = GetComponent<NPCDialogue>();
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (_triggered && triggerOnce) return;
-        if (!other.CompareTag("Player")) return;
+        if (!other.CompareTag("Player"))
+            return;
+
+        if (!string.IsNullOrWhiteSpace(seenFlagKey) && GetFlag(seenFlagKey, false))
+            return;
+
+        bool opened = _dialogue.StartDialogueFromTrigger();
+        if (!opened)
+            return;
 
         if (!string.IsNullOrWhiteSpace(seenFlagKey))
-        {
-            bool seen =
-                GameStateService.Instance != null ? GameStateService.Instance.GetFlag(seenFlagKey, false) :
-                GameManager.Instance != null ? GameManager.Instance.GetFlag(seenFlagKey, false) :
-                false;
+            SetFlag(seenFlagKey, true);
 
-            if (seen) return;
-        }
-
-        if (dialoguePresenter == null || dialogueData == null) return;
-
-        _player = other.GetComponent<PlayerController>();
-
-        if (disablePlayerMoveWhileOpen && _player != null)
-            _player.MoveAction.Disable();
-
-        dialoguePresenter.DialogueClosed -= OnDialogueClosed;
-        dialoguePresenter.DialogueClosed += OnDialogueClosed;
-
-        if (dialoguePresenter.StartDialogueForced(dialogueData))
-        {
-            _triggered = true;
-
-            if (!string.IsNullOrWhiteSpace(seenFlagKey))
-            {
-                if (GameStateService.Instance != null) GameStateService.Instance.SetFlag(seenFlagKey, true);
-                else if (GameManager.Instance != null) GameManager.Instance.SetFlag(seenFlagKey, true);
-            }
-
-            if (triggerOnce)
-                GetComponent<Collider2D>().enabled = false;
-        }
-        else
-        {
-            // If it didn't open, restore movement
-            if (disablePlayerMoveWhileOpen && _player != null)
-                _player.MoveAction.Enable();
-        }
+        if (disableTriggerAfterShow)
+            _col.enabled = false;
     }
 
-    private void OnDialogueClosed()
+    private static bool GetFlag(string key, bool defaultValue)
     {
-        if (dialoguePresenter != null)
-            dialoguePresenter.DialogueClosed -= OnDialogueClosed;
+        if (GameStateService.Instance != null) return GameStateService.Instance.GetFlag(key, defaultValue);
+        if (GameManager.Instance != null) return GameManager.Instance.GetFlag(key, defaultValue);
+        return defaultValue;
+    }
 
-        if (disablePlayerMoveWhileOpen && _player != null)
-            _player.MoveAction.Enable();
-
-        _player = null;
+    private static void SetFlag(string key, bool value)
+    {
+        if (GameStateService.Instance != null) GameStateService.Instance.SetFlag(key, value);
+        else if (GameManager.Instance != null) GameManager.Instance.SetFlag(key, value);
     }
 }
